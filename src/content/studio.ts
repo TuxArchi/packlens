@@ -323,6 +323,7 @@ function signature(): string {
 }
 
 async function expandEditor(): Promise<boolean> {
+  if (!isEditPage()) return false;
   if (queryDeep('#tags-container').length > 0) return true;
 
   const editor =

@@ -42,6 +42,7 @@ import type {
   VideoData,
 } from '../core/types';
 import { extractPublishedVideo } from '../core/watch-page';
+import type { PublishedVideo } from '../core/watch-page';
 import {
   fetchChannelStats,
   fetchChannelUploads,
@@ -54,7 +55,7 @@ import type { ApiVideo } from '../core/youtube-api';
 
 const WATCH_PREFIX = 'https://www.youtube.com/watch';
 const STUDIO_PREFIX = 'https://studio.youtube.com/';
-const PUBLISHED_TAGS_TTL = 10 * 60 * 1000;
+const PUBLISHED_VIDEO_TTL = 10 * 60 * 1000;
 const TAG_FETCH_TIMEOUT = 5000;
 const CHANNEL_TTL = 15 * 60 * 1000;
 const CHANNEL_TIMEOUT = 10_000;
@@ -74,7 +75,11 @@ const KEYWORD_CACHE_MAX = 40;
 
 let lastSessionSearchAt = 0;
 
-const publishedTagsCache = new Map<string, { tags: string[]; fetchedAt: number }>();
+const publishedVideoCache = new Map<
+  string,
+  { video: PublishedVideo | null; fetchedAt: number }
+>();
+const tagsExpanded = new Set<string>();
 const channelOutliersCache = new Map<string, { data: ChannelOutliers; fetchedAt: number }>();
 const thumbnailMetricsCache = new Map<string, { metrics: ThumbMetrics; at: number }>();
 const performanceCache = new Map<string, CachedPerformance>();
@@ -200,7 +205,42 @@ async function collectFromWatch(tabId: number, expectedId: string): Promise<Vide
   return toVideoData(raw, 'watch');
 }
 
-async function collectFromStudio(tabId: number): Promise<VideoData | null> {
+function studioVideoIdFromUrl(url: string): string | null {
+  try {
+    const match = new URL(url).pathname.match(/\/video\/([\w-]{11})(?:\/|$)/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+function videoDataFromPublished(
+  videoId: string,
+  published: PublishedVideo,
+): VideoData {
+  const thumbnail = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+  return {
+    source: 'studio',
+    videoId,
+    title: published.title || '',
+    thumbnailUrl: thumbnail,
+    thumbnailFallbackUrl: thumbnail,
+    visibility: 'public',
+    channel: published.channel ?? null,
+    channelId: published.channelId ?? null,
+    views: published.views ?? null,
+    publishedAt: published.publishedAt ?? null,
+    lengthSeconds: published.lengthSeconds ?? null,
+    tags: published.tags,
+    description: published.description ?? '',
+    category: null,
+  };
+}
+
+async function collectFromStudio(
+  tabId: number,
+  url: string,
+): Promise<VideoData | null> {
   let data: VideoData | null = null;
 
   try {
@@ -208,21 +248,72 @@ async function collectFromStudio(tabId: number): Promise<VideoData | null> {
       type: 'GET_STUDIO_DATA',
     })) as VideoData | null;
   } catch {
-    return null;
+    data = null;
+  }
+
+  const pathVideoId = studioVideoIdFromUrl(url);
+
+  // If the content script has no cached editor data (for example, the panel
+  // was opened on Analytics after a full reload), recover a published video
+  // from its public watch page.
+  if (!data && pathVideoId) {
+    const published = await fetchPublishedVideo(pathVideoId);
+    if (published) data = videoDataFromPublished(pathVideoId, published);
   }
 
   if (!data) return null;
 
   let result = data;
 
-  // Studio hides tags behind "Show more" and only renders them after it is
-  // expanded. For published videos we can recover the saved tags straight from
-  // the public watch page, with no API quota involved. Scheduled and private
-  // videos have no public page, so skip the request entirely.
-  const hasPublicPage = result.visibility !== 'scheduled' && result.visibility !== 'private';
-  if (hasPublicPage && result.tags.length === 0 && result.videoId) {
-    const tags = await fetchPublishedTags(result.videoId);
-    if (tags.length > 0) result = { ...result, tags };
+  // Studio hides tags behind "Show more". Try once per video to expand the
+  // editor, then recover published metadata below if it is still empty.
+  if (
+    result.tags.length === 0 &&
+    result.videoId &&
+    !tagsExpanded.has(result.videoId)
+  ) {
+    tagsExpanded.add(result.videoId);
+    if (tagsExpanded.size > 50) {
+      const oldest = tagsExpanded.values().next().value;
+      if (oldest) tagsExpanded.delete(oldest);
+    }
+
+    try {
+      await browser.tabs.sendMessage(tabId, { type: 'EXPAND_STUDIO_TAGS' });
+      await wait(150);
+      const refreshed = (await browser.tabs.sendMessage(tabId, {
+        type: 'GET_STUDIO_DATA',
+      })) as VideoData | null;
+      if (refreshed && refreshed.tags.length > 0) result = refreshed;
+    } catch {
+      // Ignore and try the public metadata fallback.
+    }
+  }
+
+  // For published videos, recover tags and metadata from the public page.
+  const hasPublicPage =
+    result.visibility !== 'scheduled' && result.visibility !== 'private';
+  if (
+    hasPublicPage &&
+    result.videoId &&
+    (result.tags.length === 0 ||
+      result.views == null ||
+      result.publishedAt == null ||
+      !result.channelId)
+  ) {
+    const published = await fetchPublishedVideo(result.videoId);
+    if (published) {
+      result = {
+        ...result,
+        tags: result.tags.length > 0 ? result.tags : published.tags,
+        description: result.description || published.description || '',
+        views: result.views ?? published.views ?? null,
+        publishedAt: result.publishedAt ?? published.publishedAt ?? null,
+        lengthSeconds: result.lengthSeconds ?? published.lengthSeconds ?? null,
+        channel: result.channel ?? published.channel ?? null,
+        channelId: result.channelId ?? published.channelId ?? null,
+      };
+    }
   }
 
   // The editor thumbnail is often the only one that exists for scheduled
@@ -259,10 +350,12 @@ async function collectFromStudio(tabId: number): Promise<VideoData | null> {
   return result;
 }
 
-async function fetchPublishedTags(videoId: string): Promise<string[]> {
-  const cached = publishedTagsCache.get(videoId);
-  if (cached && Date.now() - cached.fetchedAt < PUBLISHED_TAGS_TTL) {
-    return cached.tags;
+async function fetchPublishedVideo(
+  videoId: string,
+): Promise<PublishedVideo | null> {
+  const cached = publishedVideoCache.get(videoId);
+  if (cached && Date.now() - cached.fetchedAt < PUBLISHED_VIDEO_TTL) {
+    return cached.video;
   }
 
   const controller = new AbortController();
@@ -278,20 +371,22 @@ async function fetchPublishedTags(videoId: string): Promise<string[]> {
       },
     );
 
-    if (!response.ok) return [];
+    const published = response.ok
+      ? extractPublishedVideo(await response.text())
+      : null;
+    const video =
+      published && published.videoId === videoId ? published : null;
 
-    const published = extractPublishedVideo(await response.text());
-    const tags = published && published.videoId === videoId ? published.tags : [];
-
-    publishedTagsCache.set(videoId, { tags, fetchedAt: Date.now() });
-    if (publishedTagsCache.size > 50) {
-      const oldest = publishedTagsCache.keys().next().value;
-      if (oldest) publishedTagsCache.delete(oldest);
+    publishedVideoCache.set(videoId, { video, fetchedAt: Date.now() });
+    if (publishedVideoCache.size > 50) {
+      const oldest = publishedVideoCache.keys().next().value;
+      if (oldest) publishedVideoCache.delete(oldest);
     }
 
-    return tags;
+    return video;
   } catch {
-    return [];
+    publishedVideoCache.set(videoId, { video: null, fetchedAt: Date.now() });
+    return null;
   } finally {
     clearTimeout(timer);
   }
@@ -884,7 +979,7 @@ async function getVideoData(tabId?: number): Promise<VideoDataResponse> {
     }
 
     if (url.startsWith(STUDIO_PREFIX)) {
-      return { ok: true, data: await collectFromStudio(tabId) };
+      return { ok: true, data: await collectFromStudio(tabId, url) };
     }
   } catch (error) {
     return { ok: false, error: String(error) };
@@ -1026,6 +1121,35 @@ async function togglePanel(): Promise<void> {
   }
 
   await openPanel(undefined, true);
+}
+
+async function toggleSidebar(): Promise<void> {
+  const action = browser.sidebarAction as unknown as {
+    isOpen?: () => Promise<boolean>;
+    open: () => Promise<void>;
+    close?: () => Promise<void>;
+  };
+
+  try {
+    if (typeof action.isOpen === 'function' && (await action.isOpen())) {
+      if (typeof action.close === 'function') await action.close();
+    } else {
+      await action.open();
+    }
+  } catch {
+    await openPanel(undefined, true);
+    return;
+  }
+
+  const existing = await getPanelWindowId();
+  if (existing != null) {
+    await clearPanelWindow();
+    try {
+      await browser.windows.remove(existing);
+    } catch {
+      // Already closed.
+    }
+  }
 }
 
 async function licenseResponse(): Promise<LicenseResponse> {
@@ -1174,7 +1298,7 @@ browser.action.onClicked.addListener(() => {
 });
 
 browser.commands.onCommand.addListener((command) => {
-  if (command === 'toggle-panel') void togglePanel();
+  if (command === 'toggle-panel') void toggleSidebar();
 });
 
 browser.windows.onRemoved.addListener((windowId) => {

@@ -32,4 +32,34 @@ describe('extractPublishedVideo', () => {
       tags: [],
     });
   });
+
+  it('extracts the public performance metadata', () => {
+    const html = `<script>var ytInitialPlayerResponse = ${JSON.stringify({
+      videoDetails: {
+        videoId: 'abcdefghijk',
+        title: 'T',
+        keywords: ['uno'],
+        shortDescription: 'Description',
+        viewCount: '1200',
+        lengthSeconds: '90',
+        author: 'Channel',
+        channelId: 'UC123',
+      },
+      microformat: {
+        playerMicroformatRenderer: { publishDate: '2026-01-02T00:00:00Z' },
+      },
+    })};</script>`;
+
+    expect(extractPublishedVideo(html)).toEqual({
+      videoId: 'abcdefghijk',
+      title: 'T',
+      tags: ['uno'],
+      description: 'Description',
+      views: 1200,
+      lengthSeconds: 90,
+      channel: 'Channel',
+      channelId: 'UC123',
+      publishedAt: '2026-01-02T00:00:00Z',
+    });
+  });
 });
