@@ -27,6 +27,13 @@ export interface ApiVideo {
   durationSeconds: number;
 }
 
+export interface ApiVideoDescription {
+  videoId: string;
+  title: string;
+  description: string;
+  tags: string[];
+}
+
 async function getJson<T>(
   path: string,
   params: Record<string, string>,
@@ -139,6 +146,52 @@ export async function fetchVideoItems(ids: string[], key: string): Promise<ApiVi
   return ids
     .map((id) => byId.get(id))
     .filter((video): video is ApiVideo => Boolean(video));
+}
+
+export async function fetchVideoDescriptions(
+  ids: string[],
+  key: string,
+): Promise<ApiVideoDescription[]> {
+  if (ids.length === 0) return [];
+
+  const data = await getJson<{
+    items?: Array<{
+      id?: string;
+      snippet?: {
+        title?: string;
+        description?: string;
+        tags?: string[];
+      };
+    }>;
+  }>(
+    'videos',
+    {
+      part: 'snippet',
+      id: ids.join(','),
+      maxResults: '50',
+    },
+    key,
+  );
+
+  const parsed: ApiVideoDescription[] = [];
+  for (const item of data.items ?? []) {
+    const videoId = typeof item.id === 'string' ? item.id : '';
+    if (!videoId) continue;
+
+    parsed.push({
+      videoId,
+      title: item.snippet?.title ?? '',
+      description: item.snippet?.description ?? '',
+      tags: Array.isArray(item.snippet?.tags)
+        ? item.snippet.tags.filter((tag): tag is string => typeof tag === 'string')
+        : [],
+    });
+  }
+
+  const byId = new Map(parsed.map((video) => [video.videoId, video]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((video): video is ApiVideoDescription => Boolean(video));
 }
 
 export async function fetchChannelStats(ids: string[], key: string): Promise<Map<string, number>> {

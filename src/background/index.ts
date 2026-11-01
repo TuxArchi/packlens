@@ -2,6 +2,8 @@ import { parseChannelPage } from '../core/channel-page';
 import type { ChannelPage } from '../core/channel-page';
 import { computeThumbMetrics } from '../core/image-metrics';
 import type { ThumbMetrics } from '../core/image-metrics';
+import { analyzeDescriptionInsights } from '../core/description-insights';
+import type { DescriptionCompetitionInsights } from '../core/description-insights';
 import { computeKeywordResult } from '../core/keywords';
 import {
   activate as activateLicense,
@@ -12,6 +14,7 @@ import {
 } from '../core/license';
 import type {
   ChannelOutliersResponse,
+  DescriptionInsightsResponse,
   KeywordSearchResponse,
   LicenseResponse,
   OpenPanelResponse,
@@ -36,6 +39,7 @@ import type {
 import { extractPublishedVideo } from '../core/watch-page';
 import {
   fetchChannelStats,
+  fetchVideoDescriptions,
   fetchVideoItems,
   searchVideoIds,
   YouTubeApiError,
@@ -50,6 +54,9 @@ const CHANNEL_TIMEOUT = 10_000;
 const THUMB_METRICS_TTL = 10 * 60 * 1000;
 const KEYWORD_CACHE_KEY = 'keyword-cache';
 const KEYWORD_TTL = 24 * 60 * 60 * 1000;
+const DESCRIPTION_INSIGHTS_KEY = 'description-insights-cache';
+const DESCRIPTION_INSIGHTS_TTL = 24 * 60 * 60 * 1000;
+const DESCRIPTION_INSIGHTS_MAX = 40;
 const SESSION_TTL = 12 * 60 * 60 * 1000;
 const SESSION_TIMEOUT = 10_000;
 const SESSION_MIN_INTERVAL = 2000;
@@ -65,6 +72,11 @@ let panelWindowId: number | null = null;
 
 interface CachedKeyword {
   result: KeywordSearchResult;
+  at: number;
+}
+
+interface CachedDescriptionInsights {
+  data: DescriptionCompetitionInsights;
   at: number;
 }
 
@@ -372,6 +384,86 @@ async function writeKeywordCache(cache: Record<string, CachedKeyword>): Promise<
     await browser.storage.local.set({ [KEYWORD_CACHE_KEY]: Object.fromEntries(entries) });
   } catch {
     // A full local storage quota should not break the search.
+  }
+}
+
+async function readDescriptionInsightsCache(): Promise<
+  Record<string, CachedDescriptionInsights>
+> {
+  try {
+    const stored = await browser.storage.local.get(DESCRIPTION_INSIGHTS_KEY);
+    const value = stored[DESCRIPTION_INSIGHTS_KEY];
+    return value && typeof value === 'object'
+      ? (value as Record<string, CachedDescriptionInsights>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+async function writeDescriptionInsightsCache(
+  cache: Record<string, CachedDescriptionInsights>,
+): Promise<void> {
+  const entries = Object.entries(cache)
+    .filter(([, entry]) => Date.now() - entry.at < DESCRIPTION_INSIGHTS_TTL)
+    .sort((a, b) => a[1].at - b[1].at)
+    .slice(-DESCRIPTION_INSIGHTS_MAX);
+
+  try {
+    await browser.storage.local.set({
+      [DESCRIPTION_INSIGHTS_KEY]: Object.fromEntries(entries),
+    });
+  } catch {
+    // A full local storage quota should not break the optimizer.
+  }
+}
+
+async function getDescriptionInsights(
+  rawVideoIds: string[],
+  rawKeyword: string,
+): Promise<DescriptionInsightsResponse> {
+  const ids = [
+    ...new Set(
+      rawVideoIds
+        .filter((id): id is string => typeof id === 'string')
+        .map((id) => id.trim())
+        .filter((id) => id.length > 0),
+    ),
+  ].slice(0, 10);
+  if (ids.length === 0) {
+    return { ok: false, error: 'no-videos', code: 'no-videos' };
+  }
+
+  const keyword = rawKeyword.trim().slice(0, 120);
+  const cacheKey = `${keyword.toLocaleLowerCase()}|${ids.join(',')}`;
+  const cache = await readDescriptionInsightsCache();
+  const cached = cache[cacheKey];
+  if (cached && Date.now() - cached.at < DESCRIPTION_INSIGHTS_TTL) {
+    return { ok: true, data: { ...cached.data, cached: true } };
+  }
+
+  const settings = await getSettings();
+  const apiKey = settings.apiKey.trim();
+  if (!apiKey) return { ok: false, error: 'no-key', code: 'no-key' };
+
+  const quota = await getQuota();
+  if (quota.unitsLeft < 1) return { ok: false, error: 'quota', code: 'quota' };
+
+  try {
+    const videos = await fetchVideoDescriptions(ids, apiKey);
+    await addUnits(1);
+
+    const data = analyzeDescriptionInsights(keyword, videos);
+    cache[cacheKey] = { data, at: Date.now() };
+    await writeDescriptionInsightsCache(cache);
+
+    return { ok: true, data: { ...data, cached: false } };
+  } catch (error) {
+    const code =
+      error instanceof YouTubeApiError && error.reason === 'quotaExceeded'
+        ? 'quota'
+        : 'api';
+    return { ok: false, error: String(error), code };
   }
 }
 
@@ -803,7 +895,9 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
     mode?: 'api' | 'session';
     tags?: unknown;
     title?: unknown;
+    description?: unknown;
     videoId?: unknown;
+    videoIds?: unknown;
     key?: unknown;
   };
   switch (request.type) {
@@ -842,6 +936,26 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
         title,
         videoId: typeof request.videoId === 'string' ? request.videoId : null,
       });
+    }
+    case 'SET_STUDIO_DESCRIPTION': {
+      const description =
+        typeof request.description === 'string'
+          ? request.description.slice(0, 5000)
+          : '';
+      if (!description.trim()) return { ok: false, error: 'empty' };
+
+      return writeStudio({
+        type: 'SET_STUDIO_DESCRIPTION',
+        description,
+        videoId: typeof request.videoId === 'string' ? request.videoId : null,
+      });
+    }
+    case 'GET_DESCRIPTION_INSIGHTS': {
+      const videoIds = Array.isArray(request.videoIds)
+        ? request.videoIds.filter((id): id is string => typeof id === 'string')
+        : [];
+      const keyword = typeof request.keyword === 'string' ? request.keyword : '';
+      return getDescriptionInsights(videoIds, keyword);
     }
     case 'GET_QUOTA':
       return quotaResponse();

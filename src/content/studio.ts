@@ -485,6 +485,70 @@ async function setStudioTitle(
   return ok ? { ok: true } : { ok: false, needsPaste: true, error: 'write' };
 }
 
+async function setStudioDescription(
+  rawDescription: string,
+  videoId?: string | null,
+): Promise<StudioWriteResponse> {
+  if (videoId && currentVideoId() !== videoId) {
+    return { ok: false, error: 'mismatch' };
+  }
+
+  const description =
+    typeof rawDescription === 'string' ? rawDescription.trim().slice(0, 5000) : '';
+  if (!description) return { ok: false, error: 'empty' };
+
+  const field = queryDeep('#description-textarea #textbox')[0] as
+    | HTMLElement
+    | undefined;
+  if (!field) return { ok: false, needsPaste: true, error: 'no-input' };
+
+  field.focus();
+  let applied = false;
+
+  try {
+    document.execCommand('selectAll', false);
+    applied = document.execCommand('insertText', false, description);
+  } catch {
+    applied = false;
+  }
+
+  const read = () =>
+    field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
+      ? field.value
+      : field.innerText || field.textContent || '';
+  const matches = () => compactText(read()) === compactText(description);
+
+  if (!applied || !matches()) {
+    if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+      const setter = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(field),
+        'value',
+      )?.set;
+      if (setter) setter.call(field, description);
+      else field.value = description;
+      dispatchInput(field, description);
+    } else {
+      const fragment = document.createDocumentFragment();
+      for (const line of description.split('\n')) {
+        const block = document.createElement('div');
+        if (line) block.textContent = line;
+        else block.appendChild(document.createElement('br'));
+        fragment.appendChild(block);
+      }
+      field.replaceChildren(fragment);
+      dispatchInput(field, description);
+    }
+  }
+
+  scheduleChange(true);
+
+  return matches() ? { ok: true } : { ok: false, needsPaste: true, error: 'write' };
+}
+
+function compactText(value: string): string {
+  return value.replace(/\u200b/g, '').replace(/\s+/g, ' ').trim();
+}
+
 function hash(text: string): number {
   let value = 0;
   for (let index = 0; index < text.length; index += 1) {
@@ -579,6 +643,14 @@ browser.runtime.onMessage.addListener(((message: unknown) => {
     const data = message as { title?: unknown; videoId?: unknown };
     return setStudioTitle(
       typeof data.title === 'string' ? data.title : '',
+      typeof data.videoId === 'string' ? data.videoId : null,
+    );
+  }
+
+  if (type === 'SET_STUDIO_DESCRIPTION') {
+    const data = message as { description?: unknown; videoId?: unknown };
+    return setStudioDescription(
+      typeof data.description === 'string' ? data.description : '',
       typeof data.videoId === 'string' ? data.videoId : null,
     );
   }

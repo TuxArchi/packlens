@@ -10,6 +10,7 @@ import type {
 import { getSettings, saveSettings } from '../../core/settings';
 import { analyzeTitleInsights } from '../../core/insights';
 import { fitTags, normalizeTags } from '../../core/tags';
+import { DescriptionOptimizer } from './DescriptionOptimizer';
 import { generateTitleVariants } from '../../core/title-variants';
 import type { TitleVariant } from '../../core/title-variants';
 import { suggestTitles } from '../../core/title-suggestions';
@@ -246,6 +247,14 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
 
   return (
     <>
+      <DescriptionOptimizer
+        video={video}
+        keyword={result?.keyword ?? keyword}
+        topVideos={result?.top ?? []}
+        isPro={isPro}
+        onApplied={onApplied}
+      />
+
       <section class="card">
         <h3 class="section-title">{t('keywords.heading')}</h3>
         <p class="muted">{t('keywords.intro')}</p>
