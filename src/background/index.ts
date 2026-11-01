@@ -52,6 +52,7 @@ let lastSessionSearchAt = 0;
 const publishedTagsCache = new Map<string, { tags: string[]; fetchedAt: number }>();
 const channelOutliersCache = new Map<string, { data: ChannelOutliers; fetchedAt: number }>();
 const thumbnailMetricsCache = new Map<string, { metrics: ThumbMetrics; at: number }>();
+const PANEL_WINDOW_KEY = 'panel-window-id';
 let panelWindowId: number | null = null;
 
 interface CachedKeyword {
@@ -617,6 +618,72 @@ async function getVideoData(tabId?: number): Promise<VideoDataResponse> {
   return { ok: true, data: null };
 }
 
+async function getPanelWindowId(): Promise<number | null> {
+  if (panelWindowId != null) {
+    try {
+      await browser.windows.get(panelWindowId);
+      return panelWindowId;
+    } catch {
+      panelWindowId = null;
+    }
+  }
+
+  try {
+    const stored = await browser.storage.local.get(PANEL_WINDOW_KEY);
+    const id = stored[PANEL_WINDOW_KEY];
+    if (typeof id !== 'number') return null;
+
+    const window = await browser.windows.get(id, { populate: true });
+    const prefix = browser.runtime.getURL('sidebar/index.html');
+    const isPanel = (window.tabs ?? []).some((tab) =>
+      (tab.url ?? '').startsWith(prefix),
+    );
+
+    if (!isPanel) {
+      await browser.storage.local.remove(PANEL_WINDOW_KEY);
+      return null;
+    }
+
+    panelWindowId = id;
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+async function storePanelWindow(id: number): Promise<void> {
+  panelWindowId = id;
+  try {
+    await browser.storage.local.set({ [PANEL_WINDOW_KEY]: id });
+  } catch {
+    // The in-memory id still works for this session.
+  }
+}
+
+async function clearPanelWindow(): Promise<void> {
+  panelWindowId = null;
+  try {
+    await browser.storage.local.remove(PANEL_WINDOW_KEY);
+  } catch {
+    // Ignore.
+  }
+}
+
+async function closeIntegratedSidebar(): Promise<void> {
+  try {
+    const action = browser.sidebarAction as unknown as {
+      isOpen?: () => Promise<boolean>;
+      close?: () => Promise<void>;
+    };
+
+    if (typeof action.isOpen === 'function' && (await action.isOpen())) {
+      if (typeof action.close === 'function') await action.close();
+    }
+  } catch {
+    // Ignore: the integrated sidebar may not support these methods.
+  }
+}
+
 async function openPanel(
   tabId?: number,
   fromContentScript = false,
@@ -632,6 +699,10 @@ async function openPanel(
     }
   }
 
+  // Keep a single interface: if the old integrated sidebar is open, close it
+  // before showing the panel window.
+  await closeIntegratedSidebar();
+
   let targetTab = tabId;
   if (typeof targetTab !== 'number') {
     try {
@@ -646,13 +717,10 @@ async function openPanel(
   const url = browser.runtime.getURL(`sidebar/index.html${query}`);
 
   try {
-    if (panelWindowId != null) {
-      try {
-        await browser.windows.update(panelWindowId, { focused: true });
-        return { ok: true, mode: 'window' };
-      } catch {
-        panelWindowId = null;
-      }
+    const existing = await getPanelWindowId();
+    if (existing != null) {
+      await browser.windows.update(existing, { focused: true });
+      return { ok: true, mode: 'window' };
     }
 
     const created = await browser.windows.create({
@@ -662,11 +730,27 @@ async function openPanel(
       height: 760,
     });
 
-    panelWindowId = created.id ?? null;
+    if (created.id != null) await storePanelWindow(created.id);
     return { ok: true, mode: 'window' };
   } catch (error) {
     return { ok: false, error: String(error) };
   }
+}
+
+async function togglePanel(): Promise<void> {
+  const existing = await getPanelWindowId();
+
+  if (existing != null) {
+    await clearPanelWindow();
+    try {
+      await browser.windows.remove(existing);
+    } catch {
+      // Already closed.
+    }
+    return;
+  }
+
+  await openPanel(undefined, true);
 }
 
 browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtime.MessageSender) => {
@@ -728,5 +812,13 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
 }) as any);
 
 browser.action.onClicked.addListener(() => {
-  void browser.sidebarAction.toggle();
+  void togglePanel();
+});
+
+browser.commands.onCommand.addListener((command) => {
+  if (command === 'toggle-panel') void togglePanel();
+});
+
+browser.windows.onRemoved.addListener((windowId) => {
+  if (windowId === panelWindowId) void clearPanelWindow();
 });

@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 Versionado [SemVer](https://semver.org/lang/es/).
 
+## [0.2.3] - 2026-11-01
+
+### Corregido
+
+- El atajo `Alt+Shift+P` y el icono de la barra ahora abren y cierran **la misma ventana** que el botón de Studio, en lugar de togglear el sidebar integrado.
+- El comando `_execute_sidebar_action` se sustituye por un comando custom `toggle-panel`.
+- Al abrir la ventana se cierra el sidebar integrado si estaba abierto, para no tener dos interfaces.
+- El ID de la ventana se guarda en `storage.local` (`panel-window-id`) y se valida antes de cerrarla, aunque el background se haya descargado.
+- El sidebar integrado sigue disponible en el menú de Firefox, pero ya no se abre al instalar.
+
 ## [0.2.2] - 2026-11-01
 
 ### Corregido

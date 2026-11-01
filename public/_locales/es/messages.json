@@ -1,7 +1,7 @@
 {
   "extName": { "message": "PackLens" },
   "extDescription": { "message": "Analiza el packaging y el SEO de videos de YouTube: miniatura, título, descripción, tags e investigación de keywords. Todo se queda en tu navegador." },
-  "commandOpenPanel": { "message": "Abrir el panel de PackLens" },
+  "commandOpenPanel": { "message": "Abrir o cerrar el panel de PackLens" },
 
   "studio.openPanel": { "message": "Abrir PackLens" },
   "studio.openHintOk": { "message": "Panel abierto. Si no lo ves, pulsa Alt+Shift+P." },

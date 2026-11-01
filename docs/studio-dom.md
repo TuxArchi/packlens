@@ -63,12 +63,12 @@ El content script carga la misma URL con `crossOrigin = 'anonymous'` (i9 envía 
 
 ## Botón flotante y atajo
 
-- Botón en Shadow DOM, `z-index` alto, esquina inferior derecha.
-- El click envía `OPEN_SIDEBAR`. Como viene de un content script, el background **no** intenta `sidebarAction.open()` (el gesto de usuario no se propaga) y abre un **panel en ventana** con `windows.create`.
-- La ventana carga `sidebar/index.html?tabId=<pestaña>`; `useActiveVideo` usa esa pestaña fija en lugar de la pestaña activa.
-- Si la ventana ya existe, se enfoca en lugar de crear otra.
-- Si el mensaje viene de una página de extensión (por ejemplo el sidebar), sí se intenta `sidebarAction.open()`.
-- El atajo usa `_execute_sidebar_action` en el manifest, que es una acción de usuario real y abre el sidebar de Firefox.
+- El botón de Studio abre o enfoca un **panel en ventana** con `windows.create`. La ventana carga `sidebar/index.html?tabId=<pestaña>`; `useActiveVideo` usa esa pestaña fija.
+- El atajo y el icono de la barra ejecutan `togglePanel()`: si la ventana existe, la cierra; si no, la abre.
+- El comando es custom (`toggle-panel`) en el manifest. Ya no se usa `_execute_sidebar_action`.
+- Antes de abrir la ventana se cierra el sidebar integrado (`sidebarAction.isOpen()` + `close()`) para dejar una sola interfaz.
+- El ID de la ventana se guarda en `storage.local` (`panel-window-id`) y se valida con `windows.get({ populate: true })` y la URL del panel.
+- El sidebar integrado sigue disponible en **Ver → Barra lateral → PackLens**.
 - Si la ventana falla, el botón muestra un aviso con `Alt+Shift+P`.
 
 ## Depurar

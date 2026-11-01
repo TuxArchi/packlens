@@ -10,11 +10,11 @@ Extensión de Firefox para analizar el **packaging** y el **SEO** de videos de Y
 - **Outliers de canal**: qué videos rompieron la mediana del canal.
 - **Keyword research**: dificultad, interés, top 10 y recomendaciones, con modo API o sin clave.
 - **Aplicar a Studio**: añade los tags que falten y aplica títulos recomendados con confirmación.
-- **Studio**: botón flotante (abre el panel en una ventana propia) y atajo `Alt+Shift+P` para abrir el sidebar.
+- **Studio**: botón flotante, icono de la barra y atajo `Alt+Shift+P` que abren/cierran la misma ventana del panel. El sidebar integrado queda como vista opcional en el menú de Firefox.
 
 ## Estado
 
-**v0.2.2** — núcleo gratuito y open source. Las funciones avanzadas que dependan de servidores, OAuth o IA gestionada pueden distribuirse por separado (ver [Open core](#open-core)).
+**v0.2.3** — núcleo gratuito y open source. Las funciones avanzadas que dependan de servidores, OAuth o IA gestionada pueden distribuirse por separado (ver [Open core](#open-core)).
 
 ## Instalación
 
@@ -47,11 +47,12 @@ Descarga el ZIP de la release y cárgalo con `about:debugging` o fírmalo en AMO
 
 ## Abrir el panel
 
-- **Botón flotante** en la esquina inferior derecha de YouTube Studio: abre PackLens en una **ventana propia**, porque Firefox no permite abrir un sidebar desde un content script sin gesto de usuario.
-- **Atajo `Alt+Shift+P`** desde cualquier pestaña: abre el **sidebar** real. Se puede cambiar en `about:addons` → engranaje → **Administrar atajos de extensiones**.
-- Icono de PackLens en la barra de herramientas.
+- **Botón flotante** en la esquina inferior derecha de YouTube Studio: abre o enfoca la ventana del panel.
+- **Atajo `Alt+Shift+P`**: abre o cierra esa **misma ventana**. Si el sidebar integrado de una versión anterior está abierto, lo cierra para dejar una sola interfaz.
+- **Icono de la barra de herramientas**: hace lo mismo que el atajo.
+- El **sidebar integrado** de Firefox sigue disponible en **Ver → Barra lateral → PackLens**, pero ya no es el objetivo del atajo.
 
-Si el botón no puede abrir la ventana, muestra un aviso con el atajo. La ventana se enfoca si ya está abierta.
+La ventana se recuerda entre descargas del background con `panel-window-id`, y se valida antes de cerrarla para no tocar ventanas ajenas.
 
 ## Keyword research y API key
 

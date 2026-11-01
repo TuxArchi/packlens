@@ -1,6 +1,6 @@
 {
   "name": "packlens",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "PackLens: Firefox extension for YouTube packaging, SEO and keyword research.",
