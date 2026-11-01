@@ -47,7 +47,7 @@ PRO OPCIONAL
 • Descripción avanzada con términos y hashtags de la competencia.
 • Analytics CSV: CTR, impresiones, AVD y % medio visto.
 • Exportaciones de auditoría, keywords y resúmenes en CSV/JSON.
-• 3 dispositivos y 7 días de prueba.
+• 3 dispositivos en mensual, 5 en anual, y 7 días de prueba.
 
 PRIVACIDAD
 • La license key se envía solo a Lemon Squeezy para activar/validar/desactivar.

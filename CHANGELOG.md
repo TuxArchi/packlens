@@ -7,7 +7,7 @@ Versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
-- **Licencia Pro con Lemon Squeezy**: activación, validación diaria, desactivación, 3 dispositivos, prueba de 7 días y gracia offline de 7 días.
+- **Licencia Pro con Lemon Squeezy**: activación, validación diaria, desactivación, 3 dispositivos en mensual, 5 en anual, prueba de 7 días y gracia offline de 7 días.
 - **Free vs Pro** con gates en la UI y código público.
 - **Generador avanzado de títulos**: 10 variantes puntuadas con patrones del top 10.
 - **Optimizador de descripción**: análisis local, introducción SEO, keyword, tags al final, 3 hashtags, diff y aplicación en Studio.

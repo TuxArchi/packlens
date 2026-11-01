@@ -41,8 +41,9 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 - **Optimizador avanzado de descripción**: términos y hashtags de la competencia.
 - **Analytics CSV**: CTR, impresiones, AVD y % medio visto desde el CSV de Studio.
 - **Exportaciones**: auditoría, keywords, recomendaciones y resúmenes en CSV/JSON.
-- **3 dispositivos** y **7 días de prueba**.
+- **3 dispositivos en mensual o 5 en anual** y **7 días de prueba**.
 - Validación diaria y **7 días de gracia offline**.
+- **14 días de reembolso** en la primera compra.
 
 ### Fuera de v0.3.0
 
@@ -73,7 +74,7 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 | Descripción con datos de competencia | — | Sí |
 | Analytics CSV | — | Sí |
 | Exportaciones CSV/JSON | — | Sí |
-| Dispositivos | Local | 3 |
+| Dispositivos | Local | 3 mensual · 5 anual |
 | Prueba | — | 7 días |
 
 ## Precio y licencia
@@ -88,7 +89,7 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 - Precio de lanzamiento. Lemon Squeezy gestiona pago, IVA y licencia.
 - La license key se pega en **Ajustes → Licencia → Activar Pro**.
 - La clave se guarda en `storage.local` y solo se envía a Lemon Squeezy.
-- Hasta 3 dispositivos, con desactivación desde Ajustes.
+- Hasta 3 dispositivos en mensual o 5 en anual, con desactivación desde Ajustes.
 
 El gate es una comodidad, no DRM. El código de Pro también es público.
 
