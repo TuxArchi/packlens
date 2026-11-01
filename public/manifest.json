@@ -1,0 +1,94 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "description": "__MSG_extDescription__",
+  "version": "0.2.1",
+  "default_locale": "en",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "packlens@packlens.app",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://www.youtube.com/*",
+    "*://studio.youtube.com/*",
+    "*://*.ytimg.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_title": "__MSG_extName__",
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    }
+  },
+  "sidebar_action": {
+    "default_title": "__MSG_extName__",
+    "default_panel": "sidebar/index.html",
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    },
+    "open_at_install": true
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "__MSG_commandOpenPanel__"
+    }
+  },
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.youtube.com/*"
+      ],
+      "js": [
+        "content/watch.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://www.youtube.com/*"
+      ],
+      "js": [
+        "content/channel.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://studio.youtube.com/*"
+      ],
+      "js": [
+        "content/studio.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

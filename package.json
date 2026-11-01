@@ -1,0 +1,32 @@
+{
+  "name": "packlens",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "description": "PackLens: Firefox extension for YouTube packaging, SEO and keyword research.",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TuxArchi/packlens.git"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npm run build && web-ext run --source-dir dist",
+    "lint": "web-ext lint --source-dir dist",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && web-ext build --source-dir dist --artifacts-dir web-ext-artifacts --overwrite-dest"
+  },
+  "dependencies": {
+    "preact": "^11.1.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "@types/firefox-webext-browser": "^143.0.1",
+    "@types/node": "^22.10.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5",
+    "web-ext": "^10.8.0"
+  }
+}

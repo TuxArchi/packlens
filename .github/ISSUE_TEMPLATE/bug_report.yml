@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a reproducible problem
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar. No incluyas claves de API, cookies ni datos personales.
+  - type: input
+    id: version
+    attributes:
+      label: Versión de PackLens
+      placeholder: "0.2.1"
+    validations:
+      required: true
+  - type: input
+    id: firefox
+    attributes:
+      label: Navegador y versión
+      description: Firefox, Zen, Librewolf…
+      placeholder: "Firefox 153 / Zen 1.23"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Packaging
+        - SEO
+        - Tags
+        - Keywords
+        - Outliers
+        - YouTube Studio
+        - Ajustes
+        - Otro
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      placeholder: |
+        1. Abre ...
+        2. Pulsa ...
+        3. Ocurre ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Qué esperabas
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errores de consola
+      description: Consola de la página o de la extensión. Sin datos personales.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Comprobaciones
+      options:
+        - label: He buscado issues existentes
+          required: true
+        - label: He eliminado claves, cookies y datos personales
+          required: true

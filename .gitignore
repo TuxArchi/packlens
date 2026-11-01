@@ -1,0 +1,11 @@
+node_modules/
+dist/
+web-ext-artifacts/
+*.log
+.DS_Store
+.env
+.env.*
+*.pem
+*.key
+.idea/
+.vscode/

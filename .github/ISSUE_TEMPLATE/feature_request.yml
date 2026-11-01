@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest an improvement
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qué problema resuelve
+      description: Describe la situación y por qué la función actual no basta.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Cómo te gustaría que funcionara.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Packaging
+        - SEO
+        - Tags
+        - Keywords
+        - Outliers
+        - YouTube Studio
+        - Ajustes
+        - Otro
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Comprobaciones
+      options:
+        - label: He buscado issues existentes
+          required: true
+        - label: Entiendo que el núcleo es open source y que no todas las ideas encajan en él
+          required: true
