@@ -99,7 +99,13 @@ describe('parseChannelPage', () => {
     expect(page?.channelId).toBe('UCuAXFkgsw1L7xaCfnd5JJOw');
     expect(page?.channelName).toBe('Canal de prueba');
     expect(page?.videos).toEqual([
-      { videoId: 'vid1', title: 'Video uno', views: 114_000 },
+      {
+        videoId: 'vid1',
+        title: 'Video uno',
+        views: 114_000,
+        publishedText: '4mo ago',
+        publishedDaysAgo: 120,
+      },
       { videoId: 'vid2', title: 'Video dos', views: 1_200_000 },
     ]);
   });

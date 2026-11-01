@@ -11,12 +11,13 @@ import { loadThumbnail } from '../core/thumbnail';
 import { useActiveVideo } from './useActiveVideo';
 import { CheckList } from './components/Checks';
 import { KeywordPanel } from './components/KeywordPanel';
+import { PerformancePanel } from './components/PerformancePanel';
 import { ScoreRing } from './components/ScoreRing';
 import { SeoPanel } from './components/SeoPanel';
 import { TagsPanel } from './components/TagsPanel';
 import { VideoCard } from './components/VideoCard';
 
-type Tab = 'packaging' | 'tags' | 'seo' | 'keywords';
+type Tab = 'packaging' | 'tags' | 'seo' | 'keywords' | 'performance';
 
 const reportCache = new Map<string, PackagingReport>();
 
@@ -198,6 +199,7 @@ export function App() {
     { id: 'tags', label: t('ui.tabTags') },
     { id: 'seo', label: t('ui.tabSeo') },
     { id: 'keywords', label: t('ui.tabKeywords') },
+    { id: 'performance', label: t('ui.tabPerformance') },
   ];
 
   const emptyKind: 'not-youtube' | 'empty' | 'error' =
@@ -315,6 +317,13 @@ export function App() {
             isPro={entitlements.isPro}
           />
         )}
+
+        {tab === 'performance' &&
+          (data ? (
+            <PerformancePanel video={data} isPro={entitlements.isPro} />
+          ) : (
+            videoFallback
+          ))}
       </main>
     </div>
   );

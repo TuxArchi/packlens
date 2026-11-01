@@ -32,6 +32,8 @@ describe('locales', () => {
       'keywords.modeApi',
       'license.planPro',
       'description.scoreChange',
+      'performance.csv.ctr',
+      'performance.csv.colCtr',
     ]);
 
     for (const [key, value] of Object.entries(es)) {

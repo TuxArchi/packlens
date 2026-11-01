@@ -5,6 +5,7 @@ import type { ThumbMetrics } from '../core/image-metrics';
 import { analyzeDescriptionInsights } from '../core/description-insights';
 import type { DescriptionCompetitionInsights } from '../core/description-insights';
 import { computeKeywordResult } from '../core/keywords';
+import type { PerformanceStats } from '../core/performance';
 import {
   activate as activateLicense,
   deactivate as deactivateLicense,
@@ -18,6 +19,7 @@ import type {
   KeywordSearchResponse,
   LicenseResponse,
   OpenPanelResponse,
+  PerformanceResponse,
   QuotaResponse,
   SimpleResponse,
   StudioWriteResponse,
@@ -44,6 +46,7 @@ import {
   searchVideoIds,
   YouTubeApiError,
 } from '../core/youtube-api';
+import type { ApiVideo } from '../core/youtube-api';
 
 const WATCH_PREFIX = 'https://www.youtube.com/watch';
 const STUDIO_PREFIX = 'https://studio.youtube.com/';
@@ -57,6 +60,7 @@ const KEYWORD_TTL = 24 * 60 * 60 * 1000;
 const DESCRIPTION_INSIGHTS_KEY = 'description-insights-cache';
 const DESCRIPTION_INSIGHTS_TTL = 24 * 60 * 60 * 1000;
 const DESCRIPTION_INSIGHTS_MAX = 40;
+const PERFORMANCE_TTL = 15 * 60 * 1000;
 const SESSION_TTL = 12 * 60 * 60 * 1000;
 const SESSION_TIMEOUT = 10_000;
 const SESSION_MIN_INTERVAL = 2000;
@@ -67,6 +71,7 @@ let lastSessionSearchAt = 0;
 const publishedTagsCache = new Map<string, { tags: string[]; fetchedAt: number }>();
 const channelOutliersCache = new Map<string, { data: ChannelOutliers; fetchedAt: number }>();
 const thumbnailMetricsCache = new Map<string, { metrics: ThumbMetrics; at: number }>();
+const performanceCache = new Map<string, CachedPerformance>();
 const PANEL_WINDOW_KEY = 'panel-window-id';
 let panelWindowId: number | null = null;
 
@@ -77,6 +82,11 @@ interface CachedKeyword {
 
 interface CachedDescriptionInsights {
   data: DescriptionCompetitionInsights;
+  at: number;
+}
+
+interface CachedPerformance {
+  data: PerformanceStats;
   at: number;
 }
 
@@ -119,6 +129,7 @@ function readPlayerResponseInPage(): RawVideo | null {
     viewCount: details.viewCount != null ? Number(details.viewCount) : null,
     lengthSeconds: details.lengthSeconds != null ? Number(details.lengthSeconds) : null,
     channel: String(details.author ?? ''),
+    channelId: String(details.channelId ?? ''),
     description: String(details.shortDescription ?? ''),
     thumbnails: thumbnails
       .map((thumb: any) => String((thumb && thumb.url) ?? ''))
@@ -465,6 +476,105 @@ async function getDescriptionInsights(
         : 'api';
     return { ok: false, error: String(error), code };
   }
+}
+
+async function getPerformance(input: {
+  videoId: string;
+  title?: string;
+  publishedAt?: string | null;
+  views?: number | null;
+  channelId?: string | null;
+}): Promise<PerformanceResponse> {
+  const videoId = input.videoId.trim();
+  if (!videoId) return { ok: false, error: 'no-video' };
+
+  const cached = performanceCache.get(videoId);
+  if (cached && Date.now() - cached.at < PERFORMANCE_TTL) {
+    return { ok: true, data: { ...cached.data } };
+  }
+
+  const settings = await getSettings();
+  const apiKey = settings.apiKey.trim();
+  let video: ApiVideo | null = null;
+  let partial = false;
+
+  if (apiKey) {
+    try {
+      const fetched = await fetchVideoItems([videoId], apiKey);
+      video = fetched[0] ?? null;
+      if (video) await addUnits(1);
+    } catch {
+      partial = true;
+    }
+  } else {
+    partial = true;
+  }
+
+  const channelId = video?.channelId || input.channelId || null;
+  let channelName: string | null = null;
+  let channelMedianViews: number | null = null;
+  let channelMedianViewsPerDay: number | null = null;
+  let channelSampleSize = 0;
+  let baselineUnit: PerformanceStats['baselineUnit'] = 'none';
+
+  if (channelId) {
+    const page = await fetchChannelPage(`/channel/${channelId}`);
+    if (page) {
+      channelName = page.channelName || null;
+      channelSampleSize = page.videos.length;
+      channelMedianViews = median(
+        page.videos.map((item) => item.views).filter((views) => views > 0),
+      );
+
+      const perDay = page.videos
+        .filter(
+          (item) =>
+            typeof item.publishedDaysAgo === 'number' && item.publishedDaysAgo > 0,
+        )
+        .map((item) => item.views / Math.max(1, item.publishedDaysAgo as number));
+
+      if (perDay.length >= 3) {
+        channelMedianViewsPerDay = median(perDay);
+        baselineUnit = 'per-day';
+      } else if (channelMedianViews != null) {
+        baselineUnit = 'total';
+      }
+    }
+  }
+
+  const data: PerformanceStats = {
+    videoId,
+    title: video?.title || input.title || '',
+    publishedAt: video?.publishedAt || input.publishedAt || null,
+    views: video?.views ?? input.views ?? null,
+    likes: video?.likes ?? null,
+    comments: video?.comments ?? null,
+    channelId,
+    channelName,
+    channelMedianViews,
+    channelMedianViewsPerDay,
+    channelSampleSize,
+    baselineUnit,
+    partial: partial || !video,
+    fetchedAt: new Date().toISOString(),
+  };
+
+  performanceCache.set(videoId, { data, at: Date.now() });
+  if (performanceCache.size > 50) {
+    const oldest = performanceCache.keys().next().value;
+    if (oldest) performanceCache.delete(oldest);
+  }
+
+  return { ok: true, data };
+}
+
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
 async function searchApiKeyword(rawKeyword: string): Promise<KeywordSearchResponse> {
@@ -898,6 +1008,9 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
     description?: unknown;
     videoId?: unknown;
     videoIds?: unknown;
+    channelId?: unknown;
+    publishedAt?: unknown;
+    views?: unknown;
     key?: unknown;
   };
   switch (request.type) {
@@ -956,6 +1069,17 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
         : [];
       const keyword = typeof request.keyword === 'string' ? request.keyword : '';
       return getDescriptionInsights(videoIds, keyword);
+    }
+    case 'GET_PERFORMANCE': {
+      return getPerformance({
+        videoId: typeof request.videoId === 'string' ? request.videoId : '',
+        title: typeof request.title === 'string' ? request.title : undefined,
+        publishedAt:
+          typeof request.publishedAt === 'string' ? request.publishedAt : null,
+        views: typeof request.views === 'number' ? request.views : null,
+        channelId:
+          typeof request.channelId === 'string' ? request.channelId : null,
+      });
     }
     case 'GET_QUOTA':
       return quotaResponse();

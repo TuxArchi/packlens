@@ -1,5 +1,6 @@
 import type { DescriptionCompetitionInsights } from './description-insights';
 import type { LicenseSnapshot } from './license';
+import type { PerformanceStats } from './performance';
 import type {
   ChannelOutliers,
   KeywordSearchResult,
@@ -24,6 +25,14 @@ export type ExtensionRequest =
       videoId?: string | null;
     }
   | { type: 'GET_DESCRIPTION_INSIGHTS'; videoIds: string[]; keyword: string }
+  | {
+      type: 'GET_PERFORMANCE';
+      videoId: string;
+      title?: string;
+      publishedAt?: string | null;
+      views?: number | null;
+      channelId?: string | null;
+    }
   | { type: 'GET_QUOTA' }
   | { type: 'GET_LICENSE' }
   | { type: 'ACTIVATE_LICENSE'; key: string }
@@ -93,4 +102,10 @@ export interface DescriptionInsightsResponse {
   data?: DescriptionCompetitionInsights;
   error?: string;
   code?: 'no-key' | 'quota' | 'api' | 'no-videos';
+}
+
+export interface PerformanceResponse {
+  ok: boolean;
+  data?: PerformanceStats;
+  error?: string;
 }

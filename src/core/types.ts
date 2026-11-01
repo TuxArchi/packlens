@@ -11,6 +11,7 @@ export interface VideoData {
   thumbnailMetrics?: ThumbMetrics | null;
   visibility?: 'public' | 'unlisted' | 'scheduled' | 'private' | 'unknown';
   channel: string | null;
+  channelId?: string | null;
   views: number | null;
   publishedAt: string | null;
   lengthSeconds: number | null;

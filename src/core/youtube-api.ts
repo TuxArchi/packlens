@@ -23,6 +23,8 @@ export interface ApiVideo {
   channelId: string;
   channelTitle: string;
   views: number;
+  likes: number | null;
+  comments: number | null;
   publishedAt: string;
   durationSeconds: number;
 }
@@ -58,6 +60,12 @@ async function getJson<T>(
   }
 
   return (await response.json()) as T;
+}
+
+function numberOrNull(value: unknown): number | null {
+  if (value == null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export function parseIsoDuration(value: string): number {
@@ -112,7 +120,11 @@ export async function fetchVideoItems(ids: string[], key: string): Promise<ApiVi
         channelTitle?: string;
         publishedAt?: string;
       };
-      statistics?: { viewCount?: string };
+      statistics?: {
+        viewCount?: string;
+        likeCount?: string;
+        commentCount?: string;
+      };
       contentDetails?: { duration?: string };
     }>;
   }>(
@@ -136,6 +148,8 @@ export async function fetchVideoItems(ids: string[], key: string): Promise<ApiVi
       channelId: item.snippet?.channelId ?? '',
       channelTitle: item.snippet?.channelTitle ?? '',
       views: Number(item.statistics?.viewCount ?? 0) || 0,
+      likes: numberOrNull(item.statistics?.likeCount),
+      comments: numberOrNull(item.statistics?.commentCount),
       publishedAt: item.snippet?.publishedAt ?? '',
       durationSeconds: parseIsoDuration(item.contentDetails?.duration ?? ''),
     });

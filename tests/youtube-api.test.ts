@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchVideoDescriptions, parseIsoDuration } from '../src/core/youtube-api';
+import {
+  fetchVideoDescriptions,
+  fetchVideoItems,
+  parseIsoDuration,
+} from '../src/core/youtube-api';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -61,5 +65,41 @@ describe('fetchVideoDescriptions', () => {
 
     expect(await fetchVideoDescriptions([], 'KEY')).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('fetchVideoItems', () => {
+  it('parses likes and comments for the performance review', async () => {
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) => ({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'video-1',
+              snippet: {
+                title: 'Video',
+                channelId: 'UC123',
+                channelTitle: 'Channel',
+                publishedAt: '2026-01-01T00:00:00Z',
+              },
+              statistics: {
+                viewCount: '1000',
+                likeCount: '55',
+                commentCount: '12',
+              },
+              contentDetails: { duration: 'PT1M' },
+            },
+          ],
+        }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const [video] = await fetchVideoItems(['video-1'], 'KEY');
+    expect(video.views).toBe(1000);
+    expect(video.likes).toBe(55);
+    expect(video.comments).toBe(12);
+    expect(video.channelId).toBe('UC123');
   });
 });

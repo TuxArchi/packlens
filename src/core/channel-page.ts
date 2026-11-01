@@ -1,4 +1,5 @@
 import { extractJsonObject } from './json-extract';
+import { parseRelativeAgeDays } from './search-page';
 import { parseViewCount } from './view-count';
 
 export { parseViewCount } from './view-count';
@@ -7,6 +8,8 @@ export interface ChannelPageVideo {
   videoId: string;
   title: string;
   views: number;
+  publishedText?: string;
+  publishedDaysAgo?: number | null;
 }
 
 export interface ChannelPage {
@@ -32,7 +35,16 @@ function legacyVideo(node: any): ChannelPageVideo | null {
   const viewsText = runsText(node?.viewCountText);
   const views = parseViewCount(viewsText);
   if (!videoId || !title || views <= 0) return null;
-  return { videoId, title, views };
+
+  const publishedText = runsText(node?.publishedTimeText);
+  const publishedDaysAgo = parseRelativeAgeDays(publishedText);
+  return {
+    videoId,
+    title,
+    views,
+    ...(publishedText ? { publishedText } : {}),
+    ...(publishedDaysAgo != null ? { publishedDaysAgo } : {}),
+  };
 }
 
 /**
@@ -74,6 +86,8 @@ export function parseChannelPage(html: string): ChannelPage | null {
           : [];
 
       let viewsText = '';
+      let publishedText = '';
+      let publishedDaysAgo: number | null = null;
       for (const part of parts) {
         const label = typeof part?.accessibilityLabel === 'string' ? part.accessibilityLabel : '';
         const text = typeof part?.text?.content === 'string' ? part.text.content : '';
@@ -82,13 +96,24 @@ export function parseChannelPage(html: string): ChannelPage | null {
           /views|visualizaciones|vistas/i.test(label)
         ) {
           viewsText = text || label;
-          break;
+        }
+
+        const age = parseRelativeAgeDays(`${label} ${text}`);
+        if (age != null) {
+          publishedText = text || label;
+          publishedDaysAgo = age;
         }
       }
 
       const views = parseViewCount(viewsText);
       if (videoId && typeof title === 'string' && title && views > 0) {
-        videos.set(videoId, { videoId, title, views });
+        videos.set(videoId, {
+          videoId,
+          title,
+          views,
+          ...(publishedText ? { publishedText } : {}),
+          ...(publishedDaysAgo != null ? { publishedDaysAgo } : {}),
+        });
       }
     }
 

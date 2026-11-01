@@ -1048,6 +1048,151 @@ input:focus-visible {
   gap: 8px;
 }
 
+.performance {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.performance-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.performance-verdict {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.performance-verdict strong {
+  font-size: 13px;
+}
+
+.performance-verdict span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.performance-verdict.is-good {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.performance-verdict.is-fair {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.performance-verdict.is-poor {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.performance-verdict.is-pending {
+  color: var(--muted);
+}
+
+.performance-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.performance-metric {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.performance-metric span {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.performance-metric strong {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.performance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.performance-list h4 {
+  margin: 0;
+}
+
+.performance-list ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.performance-file {
+  font-size: 11px;
+  padding: 6px;
+}
+
+.performance-csv-summary {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.performance-csv-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.performance-table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.performance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.performance-table th,
+.performance-table td {
+  text-align: left;
+  padding: 4px 5px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.performance-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.performance-table td:first-child {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .kw-title-options {
   display: flex;
   flex-direction: column;

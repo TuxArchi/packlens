@@ -8,6 +8,7 @@ export interface RawVideo {
   viewCount: number | null;
   lengthSeconds: number | null;
   channel: string;
+  channelId: string;
   description: string;
   thumbnails: string[];
   publishedAt: string | null;
@@ -54,6 +55,7 @@ export function normalizeRawVideo(input: unknown): RawVideo | null {
     viewCount: asNumber(raw.viewCount),
     lengthSeconds: asNumber(raw.lengthSeconds),
     channel: asString(raw.channel),
+    channelId: asString(raw.channelId),
     description: asString(raw.description),
     thumbnails,
     publishedAt: typeof raw.publishedAt === 'string' ? raw.publishedAt : null,
@@ -73,6 +75,7 @@ export function toVideoData(raw: RawVideo, source: DataSource): VideoData {
     title: raw.title,
     thumbnailUrl: byId ?? lastThumbnail,
     channel: raw.channel || null,
+    channelId: raw.channelId || null,
     views: raw.viewCount,
     publishedAt: raw.publishedAt,
     lengthSeconds: raw.lengthSeconds,
@@ -114,6 +117,7 @@ export function readPlayerResponseFromScripts(): RawVideo | null {
       viewCount: details.viewCount,
       lengthSeconds: details.lengthSeconds,
       channel: details.author,
+      channelId: details.channelId,
       description: details.shortDescription,
       thumbnails,
       publishedAt: microformat?.publishDate ?? microformat?.uploadDate ?? null,
