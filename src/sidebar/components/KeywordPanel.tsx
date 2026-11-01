@@ -8,7 +8,10 @@ import type {
   StudioWriteResponse,
 } from '../../core/messages';
 import { getSettings, saveSettings } from '../../core/settings';
+import { analyzeTitleInsights } from '../../core/insights';
 import { fitTags, normalizeTags } from '../../core/tags';
+import { generateTitleVariants } from '../../core/title-variants';
+import type { TitleVariant } from '../../core/title-variants';
 import { suggestTitles } from '../../core/title-suggestions';
 import type {
   KeywordMode,
@@ -23,9 +26,10 @@ interface Props {
   video: VideoData | null;
   onUseKeyword: (keyword: string) => void;
   onApplied: () => void;
+  isPro: boolean;
 }
 
-export function KeywordPanel({ video, onUseKeyword, onApplied }: Props) {
+export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
   const [mode, setMode] = useState<KeywordMode>('api');
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,6 +48,7 @@ export function KeywordPanel({ video, onUseKeyword, onApplied }: Props) {
   const [pendingTitle, setPendingTitle] = useState<string | null>(null);
   const [titleBusy, setTitleBusy] = useState(false);
   const [titleMessage, setTitleMessage] = useState<string | null>(null);
+  const [advancedTitles, setAdvancedTitles] = useState<TitleVariant[]>([]);
 
   const videoId = video?.videoId ?? null;
   const isStudio = video?.source === 'studio';
@@ -75,6 +80,10 @@ export function KeywordPanel({ video, onUseKeyword, onApplied }: Props) {
     const timer = window.setTimeout(() => setTitleCopied(false), 1500);
     return () => window.clearTimeout(timer);
   }, [titleCopied]);
+
+  useEffect(() => {
+    setAdvancedTitles([]);
+  }, [result?.keyword]);
 
   const changeMode = (next: KeywordMode) => {
     setMode(next);
@@ -136,6 +145,11 @@ export function KeywordPanel({ video, onUseKeyword, onApplied }: Props) {
     [result],
   );
 
+  const titleInsights = useMemo(
+    () => (result ? analyzeTitleInsights(result.keyword, result.top) : null),
+    [result],
+  );
+
   useEffect(() => {
     if (!result) {
       setTitleDraft('');
@@ -162,6 +176,11 @@ export function KeywordPanel({ video, onUseKeyword, onApplied }: Props) {
     if (!title) return;
     const ok = await copyText(title);
     if (ok) setTitleCopied(true);
+  };
+
+  const generateAdvancedTitles = () => {
+    if (!result) return;
+    setAdvancedTitles(generateTitleVariants(result.keyword, result.top));
   };
 
   const confirmAddTags = async () => {
@@ -476,6 +495,87 @@ export function KeywordPanel({ video, onUseKeyword, onApplied }: Props) {
                     <span>{suggestion.title}</span>
                   </button>
                 ))}
+              </div>
+
+              <div class="kw-advanced">
+                <div class="kw-advanced-head">
+                  <span class="kw-sublabel">{t('keywords.advancedTitles')}</span>
+                  <span class={`plan-badge ${isPro ? 'is-pro' : 'is-free'}`}>
+                    {isPro ? t('license.planPro') : t('license.planFree')}
+                  </span>
+                </div>
+
+                {isPro ? (
+                  <>
+                    {titleInsights && titleInsights.sampleSize > 0 && (
+                      <div class="kw-insights">
+                        <span>
+                          {t('keywords.insightStart', [
+                            String(titleInsights.keywordAtStart),
+                            String(titleInsights.sampleSize),
+                          ])}
+                        </span>
+                        <span>
+                          {t('keywords.insightNumber', [
+                            String(titleInsights.withNumber),
+                            String(titleInsights.sampleSize),
+                          ])}
+                        </span>
+                        <span>
+                          {t('keywords.insightLength', [
+                            String(titleInsights.medianLength),
+                          ])}
+                        </span>
+                      </div>
+                    )}
+                    <p class="muted">{t('keywords.advancedTitlesHint')}</p>
+                    <button
+                      type="button"
+                      class="button"
+                      onClick={generateAdvancedTitles}
+                    >
+                      {t('keywords.generateTitles')}
+                    </button>
+
+                    {advancedTitles.length > 0 && (
+                      <div class="kw-title-options">
+                        {advancedTitles.map((variant) => (
+                          <button
+                            type="button"
+                            key={variant.title}
+                            class={`kw-title-option ${
+                              titleDraft === variant.title ? 'is-active' : ''
+                            }`}
+                            onClick={() => {
+                              setTitleDraft(variant.title);
+                              setPendingTitle(null);
+                            }}
+                          >
+                            <span class="kw-sublabel">
+                              {variant.score}/100
+                              {variant.reasons.length > 0
+                                ? ` · ${variant.reasons
+                                    .slice(0, 2)
+                                    .map((reason) =>
+                                      t(`keywords.titleReason.${reason}`),
+                                    )
+                                    .join(' · ')}`
+                                : ''}
+                            </span>
+                            <span>{variant.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p class="muted">{t('keywords.advancedTitlesLocked')}</p>
+                    <button type="button" class="button" onClick={openOptions}>
+                      {t('keywords.unlockPro')}
+                    </button>
+                  </>
+                )}
               </div>
 
               <input

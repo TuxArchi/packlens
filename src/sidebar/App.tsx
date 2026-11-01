@@ -308,7 +308,12 @@ export function App() {
           (data ? <SeoPanel data={data} /> : videoFallback)}
 
         {tab === 'keywords' && (
-          <KeywordPanel video={data} onUseKeyword={useKeyword} onApplied={reload} />
+          <KeywordPanel
+            video={data}
+            onUseKeyword={useKeyword}
+            onApplied={reload}
+            isPro={entitlements.isPro}
+          />
         )}
       </main>
     </div>
