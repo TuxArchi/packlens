@@ -49,7 +49,7 @@ function memoryStorage(
 function stored(overrides: Partial<StoredLicense> = {}): StoredLicense {
   return {
     ...emptyLicense(),
-    key: 'B1E81218-736F-49A0-B19A-32A85E220921',
+    key: 'B1E8-TEST-0000-0000-0921',
     plan: 'pro',
     status: 'active',
     instanceId: 'instance-1',
@@ -98,7 +98,7 @@ const validationResponse = {
 
 describe('maskLicenseKey', () => {
   it('shows only the first and last four characters', () => {
-    expect(maskLicenseKey('B1E81218-736F-49A0-B19A-32A85E220921')).toBe(
+    expect(maskLicenseKey('B1E8-TEST-0000-0000-0921')).toBe(
       'B1E8…0921',
     );
   });
@@ -175,7 +175,7 @@ describe('license storage', () => {
     const storage = memoryStorage();
     await saveLicense(stored(), storage);
     expect(storage.data[LICENSE_STORAGE_KEY]).toMatchObject({
-      key: 'B1E81218-736F-49A0-B19A-32A85E220921',
+      key: 'B1E8-TEST-0000-0000-0921',
       plan: 'pro',
     });
 
@@ -194,7 +194,7 @@ describe('activate', () => {
       async (_input: RequestInfo | URL, _init?: RequestInit) =>
         jsonResponse(activationResponse),
     );
-    const result = await activate('  B1E81218-736F-49A0-B19A-32A85E220921  ', {
+    const result = await activate('  B1E8-TEST-0000-0000-0921  ', {
       storage,
       fetchImpl: mock as unknown as typeof fetch,
       now: () => NOW,
@@ -206,7 +206,7 @@ describe('activate', () => {
     expect(result.snapshot?.activationLimit).toBe(3);
 
     const storedState = storage.data[LICENSE_STORAGE_KEY] as StoredLicense;
-    expect(storedState.key).toBe('B1E81218-736F-49A0-B19A-32A85E220921');
+    expect(storedState.key).toBe('B1E8-TEST-0000-0000-0921');
     expect(storedState.instanceId).toBe('instance-1');
     expect(storedState.lastValidatedAt).toBe(new Date(NOW).toISOString());
 
@@ -214,7 +214,7 @@ describe('activate', () => {
     const [url, init] = mock.mock.calls[0];
     expect(String(url)).toContain('/v1/licenses/activate');
     const body = new URLSearchParams(String(init?.body));
-    expect(body.get('license_key')).toBe('B1E81218-736F-49A0-B19A-32A85E220921');
+    expect(body.get('license_key')).toBe('B1E8-TEST-0000-0000-0921');
     expect(body.get('instance_name')).toBe('device-test');
   });
 
