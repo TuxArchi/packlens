@@ -34,6 +34,7 @@ PackLens analiza el packaging y el SEO de tus videos directamente en YouTube y Y
 NÚCLEO GRATIS
 • Packaging Score con análisis de miniatura, título y claridad, también en videos programados.
 • SEO Score de descripción, tags y título, con keyword editable.
+• Generador de títulos básico: 3 borradores editables a partir de los patrones del top 10.
 • Tags y competencia: compara con el top 10, detecta huecos y aplica tags en Studio.
 • Keywords con API de YouTube o modo sesión.
 • Auditoría completa del canal: mediana, outliers y bajo rendimiento.
@@ -42,7 +43,7 @@ NÚCLEO GRATIS
 • Aplicar tags y título con confirmación.
 
 PRO OPCIONAL
-• Generador avanzado de títulos con 10 variantes puntuadas.
+• Generador avanzado de títulos con 10 variantes puntuadas, además de los 3 borradores básicos.
 • Descripción avanzada con términos y hashtags de la competencia.
 • Analytics CSV: CTR, impresiones, AVD y % medio visto.
 • Exportaciones de auditoría, keywords y resúmenes en CSV/JSON.

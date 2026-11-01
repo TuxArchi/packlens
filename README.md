@@ -13,6 +13,7 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 
 - **Packaging Score** (0–100): miniatura, título y claridad, también en videos programados.
 - **SEO Score** (0–100): descripción, tags y keyword principal editable.
+- **Generador de títulos básico**: 3 borradores editables a partir de los patrones del top 10.
 - **Tags y competencia**: tags del top 10, huecos y aplicación en Studio.
 - **Keywords**: dificultad, interés, top 10 y patrones, con API o modo sesión.
 - **Auditoría completa del canal**: todos los videos, mediana, outliers y bajo rendimiento.
@@ -23,7 +24,7 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 
 ### Pro
 
-- **Generador avanzado de títulos**: 10 variantes puntuadas con patrones del top 10.
+- **Generador avanzado de títulos**: 10 variantes puntuadas con patrones del top 10, además de los 3 borradores básicos.
 - **Optimizador avanzado de descripción**: términos y hashtags de la competencia.
 - **Analytics CSV**: CTR, impresiones, AVD y % medio visto desde el CSV de Studio.
 - **Exportaciones**: auditoría, keywords, recomendaciones y resúmenes en CSV/JSON.
@@ -46,7 +47,8 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 | Auditoría completa del canal | Sí | Sí |
 | Resumen de 48 h | Sí | Sí |
 | Optimizador de descripción básico | Sí | Sí |
-| Generador avanzado de títulos | — | Sí |
+| Generador de títulos básico (3 borradores) | Sí | Sí |
+| Generador avanzado de títulos (10 variantes) | — | Sí |
 | Descripción con datos de competencia | — | Sí |
 | Analytics CSV | — | Sí |
 | Exportaciones CSV/JSON | — | Sí |
