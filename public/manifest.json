@@ -10,7 +10,7 @@
       "strict_min_version": "142.0",
       "data_collection_permissions": {
         "required": [
-          "none"
+          "authenticationInfo"
         ]
       }
     }
@@ -21,13 +21,15 @@
   },
   "permissions": [
     "storage",
-    "scripting"
+    "scripting",
+    "alarms"
   ],
   "host_permissions": [
     "*://www.youtube.com/*",
     "*://studio.youtube.com/*",
     "*://*.ytimg.com/*",
-    "https://www.googleapis.com/*"
+    "https://www.googleapis.com/*",
+    "https://api.lemonsqueezy.com/*"
   ],
   "background": {
     "scripts": [

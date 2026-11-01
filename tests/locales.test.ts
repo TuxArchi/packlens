@@ -30,6 +30,7 @@ describe('locales', () => {
       'tags.heading',
       'tags.count',
       'keywords.modeApi',
+      'license.planPro',
     ]);
 
     for (const [key, value] of Object.entries(es)) {

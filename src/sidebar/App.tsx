@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
+import { entitlementsFromSnapshot } from '../core/entitlements';
 import { computeThumbMetrics } from '../core/image-metrics';
 import { t } from '../core/i18n';
+import { LICENSE_STORAGE_KEY } from '../core/license';
+import type { LicenseSnapshot } from '../core/license';
+import type { LicenseResponse } from '../core/messages';
 import { analyzePackaging } from '../core/packaging';
 import type { PackagingReport } from '../core/packaging';
 import { loadThumbnail } from '../core/thumbnail';
@@ -91,8 +95,40 @@ export function App() {
   const [tab, setTab] = useState<Tab>('packaging');
   const [report, setReport] = useState<PackagingReport | null>(null);
   const [thumbMissing, setThumbMissing] = useState(false);
+  const [license, setLicense] = useState<LicenseSnapshot | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = () => {
+      void browser.runtime
+        .sendMessage({ type: 'GET_LICENSE' })
+        .then((response: LicenseResponse | undefined) => {
+          if (!cancelled && response?.ok && response.data) {
+            setLicense(response.data);
+          }
+        })
+        .catch(() => undefined);
+    };
+
+    load();
+
+    const onChanged = (
+      changes: { [key: string]: browser.storage.StorageChange },
+      area: string,
+    ) => {
+      if (area === 'local' && changes[LICENSE_STORAGE_KEY]) load();
+    };
+
+    browser.storage.onChanged.addListener(onChanged);
+    return () => {
+      cancelled = true;
+      browser.storage.onChanged.removeListener(onChanged);
+    };
+  }, []);
 
   const data = view.status === 'ready' ? view.data : null;
+  const entitlements = entitlementsFromSnapshot(license);
   const metricsKey = data?.thumbnailMetrics
     ? `${Math.round(data.thumbnailMetrics.tonalRange)}:${Math.round(
         data.thumbnailMetrics.edgeDensity * 1000,
@@ -206,6 +242,14 @@ export function App() {
             ◎
           </span>
           <span class="brand-name">{t('extName')}</span>
+          {license && (
+            <span
+              class={`plan-badge ${entitlements.isPro ? 'is-pro' : 'is-free'}`}
+              title={license.variantName ?? t('license.planFree')}
+            >
+              {entitlements.isPro ? t('license.planPro') : t('license.planFree')}
+            </span>
+          )}
         </div>
         <button
           type="button"

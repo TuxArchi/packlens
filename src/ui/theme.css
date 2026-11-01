@@ -1078,6 +1078,101 @@ input:focus-visible {
   accent-color: var(--accent);
 }
 
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.plan-badge.is-pro {
+  border-color: rgba(34, 211, 166, 0.5);
+  background: rgba(34, 211, 166, 0.12);
+  color: var(--accent);
+}
+
+.plan-badge.is-free {
+  color: var(--muted);
+}
+
+.license-card {
+  gap: 10px;
+}
+
+.license-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.license-title {
+  margin: 0 0 2px;
+  font-size: 13px;
+}
+
+.license-meta {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.license-meta > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.license-meta span {
+  color: var(--muted);
+}
+
+.license-meta code {
+  color: var(--text);
+  font-size: 11px;
+}
+
+.license-activate {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.license-activate .input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.license-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.license-buy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.license-buy a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.license-buy a:hover {
+  text-decoration: underline;
+}
+
 .actions {
   display: flex;
   align-items: center;

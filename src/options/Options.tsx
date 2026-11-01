@@ -2,11 +2,46 @@ import { useEffect, useState } from 'preact/hooks';
 import { copyText } from '../core/clipboard';
 import { t } from '../core/i18n';
 import { formatNumber } from '../core/format';
-import type { QuotaResponse } from '../core/messages';
+import type { LicenseSnapshot } from '../core/license';
+import type { LicenseResponse, QuotaResponse } from '../core/messages';
+import { CHECKOUT_URLS, PRICES } from '../core/pricing';
 import { DEFAULT_SETTINGS, getSettings, saveSettings } from '../core/settings';
 import type { QuotaState } from '../core/types';
 
 type Status = 'idle' | 'saved' | 'reset';
+type LicenseAction = 'activate' | 'deactivate' | 'validate';
+
+function licenseStatusLabel(snapshot: LicenseSnapshot | null): string {
+  if (!snapshot?.keyMasked) return t('license.statusFree');
+  if (snapshot.isPro) return t('license.statusActive');
+  if (snapshot.status === 'inactive') return t('license.statusInactive');
+  if (snapshot.status === 'expired') return t('license.statusExpired');
+  if (snapshot.status === 'disabled') return t('license.statusDisabled');
+  return t('license.statusInvalid');
+}
+
+function licenseErrorMessage(code?: string): string {
+  switch (code) {
+    case 'empty-key':
+      return t('license.errorEmpty');
+    case 'network':
+    case 'timeout':
+      return t('license.errorNetwork');
+    case 'activation-failed':
+    case 'deactivation-failed':
+      return t('license.errorFailed');
+    case 'storage-unavailable':
+      return t('license.errorStorage');
+    default:
+      return t('license.errorGeneric');
+  }
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+}
 
 export function Options() {
   const [apiKey, setApiKey] = useState('');
@@ -15,6 +50,11 @@ export function Options() {
   const [quota, setQuota] = useState<QuotaState | null>(null);
   const [showKey, setShowKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [license, setLicense] = useState<LicenseSnapshot | null>(null);
+  const [licenseKey, setLicenseKey] = useState('');
+  const [licenseBusy, setLicenseBusy] = useState<LicenseAction | null>(null);
+  const [licenseMessage, setLicenseMessage] = useState<string | null>(null);
+  const [licenseError, setLicenseError] = useState<string | null>(null);
 
   useEffect(() => {
     void getSettings().then((settings) => {
@@ -26,6 +66,13 @@ export function Options() {
       .sendMessage({ type: 'GET_QUOTA' })
       .then((response: QuotaResponse | undefined) => {
         if (response?.ok && response.data) setQuota(response.data);
+      })
+      .catch(() => undefined);
+
+    void browser.runtime
+      .sendMessage({ type: 'GET_LICENSE' })
+      .then((response: LicenseResponse | undefined) => {
+        if (response?.ok && response.data) setLicense(response.data);
       })
       .catch(() => undefined);
   }, []);
@@ -48,6 +95,55 @@ export function Options() {
     const ok = await copyText(value);
     if (ok) setCopiedKey(true);
   };
+
+  async function runLicenseAction(
+    action: LicenseAction,
+    key?: string,
+  ): Promise<void> {
+    setLicenseBusy(action);
+    setLicenseMessage(null);
+    setLicenseError(null);
+
+    const type =
+      action === 'activate'
+        ? 'ACTIVATE_LICENSE'
+        : action === 'deactivate'
+          ? 'DEACTIVATE_LICENSE'
+          : 'VALIDATE_LICENSE';
+
+    try {
+      const response = (await browser.runtime.sendMessage({
+        type,
+        ...(action === 'activate' ? { key: key ?? licenseKey } : {}),
+      })) as LicenseResponse | undefined;
+
+      if (response?.data) setLicense(response.data);
+
+      if (!response?.ok) {
+        setLicenseError(licenseErrorMessage(response?.error));
+        return;
+      }
+
+      if (action === 'activate') {
+        setLicenseKey('');
+        setLicenseMessage(t('license.activated'));
+      } else if (action === 'deactivate') {
+        setLicenseMessage(t('license.deactivated'));
+      } else {
+        setLicenseMessage(
+          response.offline
+            ? response.data?.isPro
+              ? t('license.offline')
+              : t('license.offlineExpired')
+            : t('license.validated'),
+        );
+      }
+    } catch {
+      setLicenseError(t('license.errorGeneric'));
+    } finally {
+      setLicenseBusy(null);
+    }
+  }
 
   async function save(): Promise<void> {
     await saveSettings({ apiKey: apiKey.trim(), showFloatingButton: showButton });
@@ -153,6 +249,162 @@ export function Options() {
             </li>
             <li>{t('options.stepRestrict')}</li>
           </ol>
+        </div>
+      </section>
+
+      <section class="card field license-card">
+        <div class="license-head">
+          <div>
+            <h3 class="license-title">{t('license.title')}</h3>
+            <p class="hint">{t('license.hint')}</p>
+          </div>
+          <span class={`plan-badge ${license?.isPro ? 'is-pro' : 'is-free'}`}>
+            {license?.isPro ? t('license.planPro') : t('license.planFree')}
+          </span>
+        </div>
+
+        {license?.keyMasked ? (
+          <div class="license-meta">
+            <div>
+              <span>{t('license.status')}</span>
+              <strong>{licenseStatusLabel(license)}</strong>
+            </div>
+            <div>
+              <span>{t('license.key')}</span>
+              <code>{license.keyMasked}</code>
+            </div>
+            {license.variantName && (
+              <div>
+                <span>{t('license.plan')}</span>
+                <span>{license.variantName}</span>
+              </div>
+            )}
+            {license.activationLimit != null && (
+              <div>
+                <span>{t('license.devices')}</span>
+                <span>
+                  {license.activationUsage ?? 0}/{license.activationLimit}
+                </span>
+              </div>
+            )}
+            {license.expiresAt && (
+              <div>
+                <span>{t('license.expires')}</span>
+                <span>{formatDate(license.expiresAt)}</span>
+              </div>
+            )}
+            {license.lastValidatedAt && (
+              <div>
+                <span>{t('license.lastCheck')}</span>
+                <span>{formatDate(license.lastValidatedAt)}</span>
+              </div>
+            )}
+            {license.isPro && license.offlineGraceUntil && (
+              <div>
+                <span>{t('license.offlineUntil')}</span>
+                <span>{formatDate(license.offlineGraceUntil)}</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p class="hint">{t('license.freeHint')}</p>
+        )}
+
+        {license?.canActivate && (
+          <button
+            type="button"
+            class="button button-primary"
+            disabled={licenseBusy !== null}
+            onClick={() => void runLicenseAction('activate')}
+          >
+            {licenseBusy === 'activate'
+              ? t('license.working')
+              : t('license.activateDevice')}
+          </button>
+        )}
+
+        {(!license?.keyMasked ||
+          license?.status === 'invalid' ||
+          license?.status === 'expired' ||
+          license?.status === 'disabled') && (
+          <div class="license-activate">
+            <input
+              class="input"
+              type="password"
+              autocomplete="off"
+              spellcheck={false}
+              placeholder={t('license.keyPlaceholder')}
+              value={licenseKey}
+              onInput={(event) =>
+                setLicenseKey((event.currentTarget as HTMLInputElement).value)
+              }
+              onKeyDown={(event) => {
+                if (
+                  event.key === 'Enter' &&
+                  licenseKey.trim().length > 0 &&
+                  licenseBusy === null
+                ) {
+                  void runLicenseAction('activate', licenseKey);
+                }
+              }}
+            />
+            <button
+              type="button"
+              class="button button-primary"
+              disabled={licenseBusy !== null || licenseKey.trim().length === 0}
+              onClick={() => void runLicenseAction('activate', licenseKey)}
+            >
+              {licenseBusy === 'activate'
+                ? t('license.working')
+                : t('license.activate')}
+            </button>
+          </div>
+        )}
+
+        {license?.canDeactivate && (
+          <div class="license-actions">
+            <button
+              type="button"
+              class="button"
+              disabled={licenseBusy !== null}
+              onClick={() => void runLicenseAction('validate')}
+            >
+              {licenseBusy === 'validate'
+                ? t('license.working')
+                : t('license.validate')}
+            </button>
+            <button
+              type="button"
+              class="button"
+              disabled={licenseBusy !== null}
+              onClick={() => void runLicenseAction('deactivate')}
+            >
+              {licenseBusy === 'deactivate'
+                ? t('license.working')
+                : t('license.deactivate')}
+            </button>
+          </div>
+        )}
+
+        {licenseMessage && <p class="status">{licenseMessage}</p>}
+        {licenseError && <p class="notice">{licenseError}</p>}
+
+        <p class="hint">{t('license.privacy')}</p>
+        <div class="license-buy">
+          <a
+            href={CHECKOUT_URLS.monthly}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('license.buyMonthly', [PRICES.monthly])}
+          </a>
+          <a
+            href={CHECKOUT_URLS.annual}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('license.buyAnnual', [PRICES.annual])}
+          </a>
         </div>
       </section>
 

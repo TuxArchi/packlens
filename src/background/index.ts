@@ -3,9 +3,17 @@ import type { ChannelPage } from '../core/channel-page';
 import { computeThumbMetrics } from '../core/image-metrics';
 import type { ThumbMetrics } from '../core/image-metrics';
 import { computeKeywordResult } from '../core/keywords';
+import {
+  activate as activateLicense,
+  deactivate as deactivateLicense,
+  getLicenseSnapshot,
+  validateCurrent as validateCurrentLicense,
+  validateIfDue as validateLicenseIfDue,
+} from '../core/license';
 import type {
   ChannelOutliersResponse,
   KeywordSearchResponse,
+  LicenseResponse,
   OpenPanelResponse,
   QuotaResponse,
   SimpleResponse,
@@ -753,6 +761,38 @@ async function togglePanel(): Promise<void> {
   await openPanel(undefined, true);
 }
 
+async function licenseResponse(): Promise<LicenseResponse> {
+  try {
+    return { ok: true, data: await getLicenseSnapshot() };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+async function activateLicenseResponse(key: string): Promise<LicenseResponse> {
+  const result = await activateLicense(key);
+  if (!result.ok || !result.snapshot) {
+    return { ok: false, error: result.error ?? 'activation-failed' };
+  }
+  return { ok: true, data: result.snapshot };
+}
+
+async function deactivateLicenseResponse(): Promise<LicenseResponse> {
+  const result = await deactivateLicense();
+  if (!result.ok || !result.snapshot) {
+    return { ok: false, error: result.error ?? 'deactivation-failed' };
+  }
+  return { ok: true, data: result.snapshot };
+}
+
+async function validateLicenseResponse(): Promise<LicenseResponse> {
+  const result = await validateCurrentLicense();
+  if (!result.ok || !result.snapshot) {
+    return { ok: false, error: result.error ?? 'validation-failed' };
+  }
+  return { ok: true, data: result.snapshot, offline: result.offline };
+}
+
 browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtime.MessageSender) => {
   if (!message || typeof message !== 'object') return undefined;
 
@@ -764,6 +804,7 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
     tags?: unknown;
     title?: unknown;
     videoId?: unknown;
+    key?: unknown;
   };
   switch (request.type) {
     case 'GET_VIDEO_DATA':
@@ -804,6 +845,16 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
     }
     case 'GET_QUOTA':
       return quotaResponse();
+    case 'GET_LICENSE':
+      return licenseResponse();
+    case 'ACTIVATE_LICENSE': {
+      const key = typeof request.key === 'string' ? request.key : '';
+      return activateLicenseResponse(key);
+    }
+    case 'DEACTIVATE_LICENSE':
+      return deactivateLicenseResponse();
+    case 'VALIDATE_LICENSE':
+      return validateLicenseResponse();
     case 'OPEN_SIDEBAR':
       return openPanel(sender.tab?.id, Boolean(sender.tab));
     default:
@@ -821,4 +872,23 @@ browser.commands.onCommand.addListener((command) => {
 
 browser.windows.onRemoved.addListener((windowId) => {
   if (windowId === panelWindowId) void clearPanelWindow();
+});
+
+const LICENSE_ALARM = 'packlens-license';
+
+void validateLicenseIfDue().catch(() => undefined);
+
+try {
+  browser.alarms.create(LICENSE_ALARM, { periodInMinutes: 24 * 60 });
+  browser.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === LICENSE_ALARM) {
+      void validateLicenseIfDue().catch(() => undefined);
+    }
+  });
+} catch {
+  // The alarms API is optional during development.
+}
+
+browser.runtime.onStartup.addListener(() => {
+  void validateLicenseIfDue().catch(() => undefined);
 });

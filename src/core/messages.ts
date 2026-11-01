@@ -1,3 +1,4 @@
+import type { LicenseSnapshot } from './license';
 import type {
   ChannelOutliers,
   KeywordSearchResult,
@@ -16,7 +17,11 @@ export type ExtensionRequest =
   | { type: 'EXPAND_STUDIO_TAGS' }
   | { type: 'ADD_STUDIO_TAGS'; tags: string[]; videoId?: string | null }
   | { type: 'SET_STUDIO_TITLE'; title: string; videoId?: string | null }
-  | { type: 'GET_QUOTA' };
+  | { type: 'GET_QUOTA' }
+  | { type: 'GET_LICENSE' }
+  | { type: 'ACTIVATE_LICENSE'; key: string }
+  | { type: 'DEACTIVATE_LICENSE' }
+  | { type: 'VALIDATE_LICENSE' };
 
 export interface VideoDataResponse {
   ok: boolean;
@@ -67,4 +72,11 @@ export interface StudioWriteResponse {
   skipped?: number;
   error?: string;
   needsPaste?: boolean;
+}
+
+export interface LicenseResponse {
+  ok: boolean;
+  data?: LicenseSnapshot;
+  error?: string;
+  offline?: boolean;
 }
