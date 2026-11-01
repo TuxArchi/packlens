@@ -13,6 +13,13 @@ export interface ActiveVideo {
   reload: () => void;
 }
 
+function studioVideoId(url: string): string | null {
+  const match = url.match(
+    /^https:\/\/studio\.youtube\.com\/video\/([\w-]{11})(?:\/|$)/,
+  );
+  return match ? match[1] : null;
+}
+
 function metricsKey(data: VideoData): string {
   const metrics = data.thumbnailMetrics;
   if (!metrics) return '';
@@ -73,6 +80,7 @@ export function useActiveVideo(): ActiveVideo {
           return;
         }
 
+        const studioId = studioVideoId(url);
         const response = await browser.runtime.sendMessage({
           type: 'GET_VIDEO_DATA',
           tabId: tab.id,
@@ -97,9 +105,27 @@ export function useActiveVideo(): ActiveVideo {
             return { status: 'ready', data };
           });
         } else if (response?.ok === false) {
-          setState({ status: 'error', message: response.error ?? '' });
+          setState((previous) => {
+            if (
+              studioId &&
+              previous.status === 'ready' &&
+              previous.data.videoId === studioId
+            ) {
+              return previous;
+            }
+            return { status: 'error', message: response.error ?? '' };
+          });
         } else {
-          setState({ status: 'empty' });
+          setState((previous) => {
+            if (
+              studioId &&
+              previous.status === 'ready' &&
+              previous.data.videoId === studioId
+            ) {
+              return previous;
+            }
+            return { status: 'empty' };
+          });
         }
       } catch (error) {
         if (!disposed) setState({ status: 'error', message: String(error) });

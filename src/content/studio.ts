@@ -6,14 +6,67 @@ import { cleanTags, fitTags, parseTagsFromText } from '../core/tags';
 import type { VideoData } from '../core/types';
 
 const EDIT_PAGE = /\/video\/([\w-]{11})\/edit/;
+const VIDEO_PATH = /\/video\/([\w-]{11})(?:\/|$)/;
+const STUDIO_CACHE_KEY = 'studio-video-cache';
+const STUDIO_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+
+interface CachedStudioVideo {
+  data: VideoData;
+  at: number;
+}
+
+let cachedStudioVideo: CachedStudioVideo | null = null;
 
 function currentVideoId(): string | null {
   const match = location.pathname.match(EDIT_PAGE);
   return match ? match[1] : null;
 }
 
+function videoIdFromPath(): string | null {
+  const match = location.pathname.match(VIDEO_PATH);
+  return match ? match[1] : null;
+}
+
 function isEditPage(): boolean {
   return EDIT_PAGE.test(location.pathname);
+}
+
+async function readStudioCache(): Promise<CachedStudioVideo | null> {
+  if (cachedStudioVideo) {
+    if (Date.now() - cachedStudioVideo.at < STUDIO_CACHE_TTL) {
+      return cachedStudioVideo;
+    }
+    cachedStudioVideo = null;
+  }
+
+  try {
+    const stored = await browser.storage.local.get(STUDIO_CACHE_KEY);
+    const value = stored[STUDIO_CACHE_KEY] as CachedStudioVideo | undefined;
+    if (
+      value &&
+      value.data &&
+      typeof value.at === 'number' &&
+      Date.now() - value.at < STUDIO_CACHE_TTL
+    ) {
+      cachedStudioVideo = value;
+      return value;
+    }
+  } catch {
+    // Ignore and fall back to collecting from the editor.
+  }
+
+  return null;
+}
+
+async function saveStudioCache(data: VideoData): Promise<void> {
+  if (!data.videoId) return;
+  const entry = { data, at: Date.now() };
+  cachedStudioVideo = entry;
+  try {
+    await browser.storage.local.set({ [STUDIO_CACHE_KEY]: entry });
+  } catch {
+    // The in-memory cache still works for this page.
+  }
 }
 
 /**
@@ -187,6 +240,16 @@ async function analyzeEditorThumbnail(
 
 async function collect(): Promise<VideoData | null> {
   const videoId = currentVideoId();
+  const pathVideoId = videoIdFromPath();
+
+  if (!videoId) {
+    if (!pathVideoId) return null;
+    const cached = await readStudioCache();
+    return cached && cached.data.videoId === pathVideoId
+      ? { ...cached.data }
+      : null;
+  }
+
   const title =
     textOf('#title-textarea #textbox') ||
     textOf('ytcp-social-suggestions-textbox#title-textarea #textbox');
@@ -195,7 +258,12 @@ async function collect(): Promise<VideoData | null> {
     textOf('#description-textarea #textbox') ||
     textOf('ytcp-social-suggestions-textbox#description-textarea #textbox');
 
-  if (!title && !videoId) return null;
+  if (!title) {
+    const cached = await readStudioCache();
+    return cached && cached.data.videoId === videoId
+      ? { ...cached.data }
+      : null;
+  }
 
   const editorThumbnail = queryDeep('ytcp-thumbnail-editor img, #thumbnail img')[0] as
     | HTMLImageElement
@@ -213,7 +281,7 @@ async function collect(): Promise<VideoData | null> {
 
   const thumbnailMetrics = await analyzeEditorThumbnail(editorThumbnail);
 
-  return {
+  const data: VideoData = {
     source: 'studio',
     videoId,
     title,
@@ -229,6 +297,9 @@ async function collect(): Promise<VideoData | null> {
     description,
     category: null,
   };
+
+  await saveStudioCache(data);
+  return data;
 }
 
 /**
