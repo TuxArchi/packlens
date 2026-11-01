@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacidad — PackLens</title>
+    <meta name="description" content="Política de privacidad de PackLens." />
+    <meta name="theme-color" content="#0f1115" />
+    <link rel="icon" href="./icon-128.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="./index.html">
+        <img src="./icon-128.png" alt="" width="28" height="28" />
+        <span>PackLens</span>
+      </a>
+      <nav aria-label="Principal">
+        <a href="./index.html#features">Funciones</a>
+        <a href="./index.html#pricing">Precios</a>
+        <a href="./index.html#faq">FAQ</a>
+        <a href="https://github.com/TuxArchi/packlens" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main class="legal">
+      <div class="wrap">
+        <a class="back" href="./index.html">← Volver a PackLens</a>
+        <h1>Política de privacidad</h1>
+        <p class="updated">Vigente desde el 1 de noviembre de 2026 · PackLens 0.3.0</p>
+
+        <p>
+          PackLens funciona en tu navegador. No hay un servidor propio de PackLens,
+          ni cuentas, ni telemetría, ni analítica, ni publicidad. Esta política
+          explica qué datos se guardan, qué se envía fuera del navegador y por qué.
+        </p>
+
+        <h2>1. Datos que se guardan en tu navegador</h2>
+        <ul>
+          <li><strong>Ajustes</strong> (<code>storage.sync</code>): API key de YouTube Data, preferencia del botón flotante y modo de búsqueda.</li>
+          <li><strong>Licencia</strong> (<code>storage.local</code>): license key, plan, ID de instancia, límite y uso de dispositivos, última validación y estado offline.</li>
+          <li><strong>Caché y cuota</strong> (<code>storage.local</code>): resultados de keywords, insights de descripciones, auditoría de canales, contadores de cuota y métricas de miniaturas.</li>
+          <li><strong>Resúmenes de rendimiento</strong> (<code>storage.local</code>): una foto de título, descripción, tags y métricas públicas por video para comparar cambios.</li>
+          <li><strong>Editor de Studio</strong> (<code>storage.local</code>): el último título, descripción y tags leídos del editor para mantener el panel al cambiar de sección.</li>
+          <li><strong>Ventana del panel</strong> (<code>storage.local</code>): el ID de la ventana desacoplada, si la usas.</li>
+        </ul>
+        <p>
+          Estos datos no se envían a ningún servidor de PackLens. Puedes borrarlos
+          eliminando la extensión o limpiando sus datos desde Firefox.
+        </p>
+
+        <h2>2. Datos que se envían fuera del navegador</h2>
+        <ul>
+          <li>
+            <strong>Lemon Squeezy</strong> (<code>api.lemonsqueezy.com</code>): la
+            license key y el ID de instancia se envían para activar, validar y
+            desactivar Pro. Lemon Squeezy gestiona el pago, el IVA y los datos de
+            la compra como merchant of record. PackLens no recibe ni almacena datos
+            de tarjeta.
+          </li>
+          <li>
+            <strong>Google / YouTube Data API</strong> (<code>googleapis.com</code>):
+            cuando usas keywords, auditoría de canal o estadísticas, se envían tu
+            API key, la keyword, IDs de videos y IDs de canal. Google los procesa
+            según sus propias políticas.
+          </li>
+          <li>
+            <strong>Páginas públicas de YouTube</strong> (<code>youtube.com</code>):
+            para leer tags publicados, metadatos de videos y la página de canal, la
+            extensión hace peticiones con las cookies que tu navegador ya tiene para
+            YouTube. No hay un proxy de PackLens.
+          </li>
+          <li>
+            <strong>CSV de Studio</strong>: se lee y procesa en tu navegador. No se
+            sube a ningún servidor.
+          </li>
+        </ul>
+
+        <h2>3. Lo que no hacemos</h2>
+        <ul>
+          <li>No usamos IA ni enviamos tus títulos, descripciones o tags a modelos externos.</li>
+          <li>No hay telemetría, analítica de producto, informes de errores ni publicidad.</li>
+          <li>No vendemos ni compartimos datos con terceros.</li>
+          <li>No accedemos a tus cookies directamente; solo las peticiones que hace el navegador incluyen las cookies existentes del sitio.</li>
+        </ul>
+
+        <h2>4. Retención y borrado</h2>
+        <p>
+          Los datos permanecen en tu perfil de Firefox hasta que borras los datos de
+          la extensión o la desinstalas. La license key se conserva para validar Pro;
+          puedes desactivar el dispositivo desde Ajustes. Los reembolsos y la
+          facturación se gestionan en Lemon Squeezy.
+        </p>
+
+        <h2>5. Menores</h2>
+        <p>PackLens no está dirigida a menores de 13 años.</p>
+
+        <h2>6. Cambios</h2>
+        <p>
+          Si una versión futura añade OAuth, un servidor o cualquier tratamiento
+          nuevo, esta política se actualizará antes de activarlo.
+        </p>
+
+        <h2>7. Contacto</h2>
+        <p>
+          Para cuestiones de privacidad, abre un issue no sensible en
+          <a href="https://github.com/TuxArchi/packlens/issues" rel="noopener">GitHub Issues</a>
+          o usa un Security Advisory para información confidencial.
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-grid">
+        <div>
+          <p class="brand-footer">PackLens</p>
+          <p class="fine">Packaging y SEO para YouTube. Hecho para editar, no para adivinar.</p>
+        </div>
+        <div class="footer-links">
+          <a href="./privacy.html">Privacidad</a>
+          <a href="./terms.html">Términos</a>
+          <a href="./refund.html">Reembolsos</a>
+          <a href="https://github.com/TuxArchi/packlens" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,130 +1,207 @@
 # PackLens
 
-Extensión de Firefox para analizar el **packaging** y el **SEO** de videos de YouTube: miniatura, título, descripción, tags, competencia y keywords. El análisis ocurre en tu navegador.
+Extensión de Firefox para **packaging, SEO y rendimiento** de videos de YouTube.
+Analiza miniatura, título, descripción, tags, competencia y resultados directamente
+en YouTube y YouTube Studio. El núcleo es gratuito y open source; Pro añade
+profundidad y comodidad con una licencia.
 
-[English summary](#english-summary)
+Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni IA.
 
-- **Packaging Score**: miniatura + título, con desglose y recomendaciones.
-- **SEO Score**: descripción, tags y colocación de la keyword.
-- **Inspector de competencia**: tags reales, visitas/hora y datos del video.
-- **Outliers de canal**: qué videos rompieron la mediana del canal.
-- **Keyword research**: dificultad, interés, top 10 y recomendaciones, con modo API o sin clave.
-- **Aplicar a Studio**: añade los tags que falten y aplica títulos recomendados con confirmación.
-- **Studio**: botón flotante, icono de la barra y atajo `Alt+Shift+P` que abren/cierran la misma ventana del panel. El sidebar integrado queda como vista opcional en el menú de Firefox.
+## Estado: v0.3.0
 
-## Estado
+### Free
 
-**v0.2.3** — núcleo gratuito y open source. Las funciones avanzadas que dependan de servidores, OAuth o IA gestionada pueden distribuirse por separado (ver [Open core](#open-core)).
+- **Packaging Score** (0–100): miniatura, título y claridad, también en videos programados.
+- **SEO Score** (0–100): descripción, tags y keyword principal editable.
+- **Tags y competencia**: tags del top 10, huecos y aplicación en Studio.
+- **Keywords**: dificultad, interés, top 10 y patrones, con API o modo sesión.
+- **Auditoría completa del canal**: todos los videos, mediana, outliers y bajo rendimiento.
+- **Resumen de 48 h**: vistas/día, engagement, cambios de metadatos y comparación con el canal.
+- **Optimizador de descripción básico**: estructura, tags, 3 hashtags, diff y aplicar en Studio.
+- **Aplicar tags y título** en Studio con confirmación.
+- Interfaz en **español e inglés**.
+
+### Pro
+
+- **Generador avanzado de títulos**: 10 variantes puntuadas con patrones del top 10.
+- **Optimizador avanzado de descripción**: términos y hashtags de la competencia.
+- **Analytics CSV**: CTR, impresiones, AVD y % medio visto desde el CSV de Studio.
+- **Exportaciones**: auditoría, keywords, recomendaciones y resúmenes en CSV/JSON.
+- **3 dispositivos** y **7 días de prueba**.
+- Validación diaria y **7 días de gracia offline**.
+
+### Fuera de v0.3.0
+
+- OAuth de YouTube Analytics (retención, fuentes de tráfico y términos de búsqueda).
+- Watchlist de canales/keywords (v0.3.1).
+- Cualquier función de IA.
+
+## Free vs Pro
+
+| Función | Free | Pro |
+| --- | --- | --- |
+| Packaging, SEO, tags y outliers | Sí | Sí |
+| Keywords con API o sesión | Sí | Sí |
+| Aplicar tags y título en Studio | Sí | Sí |
+| Auditoría completa del canal | Sí | Sí |
+| Resumen de 48 h | Sí | Sí |
+| Optimizador de descripción básico | Sí | Sí |
+| Generador avanzado de títulos | — | Sí |
+| Descripción con datos de competencia | — | Sí |
+| Analytics CSV | — | Sí |
+| Exportaciones CSV/JSON | — | Sí |
+| Dispositivos | Local | 3 |
+| Prueba | — | 7 días |
+
+## Precio y licencia
+
+- **Pro mensual**: 99 MXN/mes.
+- **Pro anual**: 998 MXN/año.
+- Precio de lanzamiento. Lemon Squeezy gestiona pago, IVA y licencia.
+- La license key se pega en **Ajustes → Licencia → Activar Pro**.
+- La clave se guarda en `storage.local` y solo se envía a Lemon Squeezy.
+- Hasta 3 dispositivos, con desactivación desde Ajustes.
+
+El gate es una comodidad, no DRM. El código de Pro también es público.
 
 ## Instalación
 
-### Desde el código
+### Release
 
-Requisitos: Firefox 142+, Node.js 20+.
+1. Descarga el ZIP de la última release:
+   [github.com/TuxArchi/packlens/releases/latest](https://github.com/TuxArchi/packlens/releases/latest)
+2. Descomprímelo.
+3. `about:debugging#/runtime/this-firefox`
+4. **Cargar complemento temporal…** → `manifest.json`.
+
+El ZIP no está firmado. Para instalación permanente hay que subirlo a AMO como
+unlisted/autodistribución y abrir el `.xpi` firmado.
+
+### Desarrollo
 
 ```bash
 npm install
 npm run build
 ```
 
-Carga la extensión:
-
-1. Abre `about:debugging#/runtime/this-firefox`.
-2. **Cargar complemento temporal…**
-3. Selecciona `dist/manifest.json`.
-
-O arranca Firefox con recarga:
+Carga `dist/manifest.json` desde `about:debugging` o ejecuta:
 
 ```bash
 npm start
 ```
 
-La extensión se instala como temporal: desaparece al reiniciar Firefox. Para una instalación permanente hay que firmarla en [addons.mozilla.org](https://addons.mozilla.org/developers/) (unlisted/autodistribución).
+## Atajo y ventanas
 
-### Desde una release
+- **`Alt+Shift+P`**: abre y cierra el **sidebar integrado** de Firefox.
+- **Botón flotante de Studio**: abre el panel en una **ventana propia** (el content script no puede abrir el sidebar sin gesto de usuario).
+- **Icono de la barra**: abre y cierra la ventana propia.
+- Al abrir el sidebar integrado se cierra la ventana propia, para dejar una sola interfaz.
 
-Descarga el ZIP de la release y cárgalo con `about:debugging` o fírmalo en AMO. El ZIP de GitHub no está firmado.
+## Uso básico
 
-## Abrir el panel
+1. Abre un video en YouTube o en YouTube Studio.
+2. Abre PackLens con el atajo, el botón de Studio o el icono.
+3. Revisa **Packaging**, **Tags**, **SEO**, **Keywords** y **Rendimiento**.
+4. Aplica título, tags o descripción con confirmación.
+5. Si la escritura automática falla, PackLens copia el contenido para pegarlo con `Ctrl+V`.
 
-- **Botón flotante** en la esquina inferior derecha de YouTube Studio: abre o enfoca la ventana del panel.
-- **Atajo `Alt+Shift+P`**: abre o cierra esa **misma ventana**. Si el sidebar integrado de una versión anterior está abierto, lo cierra para dejar una sola interfaz.
-- **Icono de la barra de herramientas**: hace lo mismo que el atajo.
-- El **sidebar integrado** de Firefox sigue disponible en **Ver → Barra lateral → PackLens**, pero ya no es el objetivo del atajo.
+## Keyword research
 
-La ventana se recuerda entre descargas del background con `panel-window-id`, y se valida antes de cerrarla para no tocar ventanas ajenas.
+La vía recomendada es la **API oficial de YouTube Data**:
 
-## Keyword research y API key
+1. Crea un proyecto en [Google Cloud Console](https://console.cloud.google.com/).
+2. Habilita **YouTube Data API v3**.
+3. Crea una **API key** y restríngela a esa API.
+4. Pégala en **Ajustes**.
 
-El modo **API** usa la YouTube Data API v3 con tu propia clave. Es gratuita y no requiere tarjeta.
+Cuota orientativa:
 
-1. Entra en [Google Cloud Console](https://console.cloud.google.com/) y crea un proyecto.
-2. Habilita [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com).
-3. Crea una API key en [Credenciales](https://console.cloud.google.com/apis/credentials) y restríngela a YouTube Data API v3.
-4. Pégala en **Ajustes** de PackLens.
+- **100 llamadas a `search.list` al día**.
+- **10.000 unidades al día** para el resto de endpoints.
+- Reinicio a medianoche del Pacífico.
+- La cuota es de tu cuenta de Google; PackLens no la revende.
 
-Cuota orientativa (modelo de 2026): **100 llamadas a `search.list` al día** en un cupo propio + **10.000 unidades al día** para `videos.list`/`channels.list`. La cuota se reinicia a medianoche del Pacífico.
+El **modo sin clave** lee `youtube.com/results` con tu sesión. Es experimental:
+sin suscriptores, con visitas compactas y sujeto a los límites de YouTube.
 
-El modo **Sin clave** es experimental: lee la página de resultados de YouTube con tu sesión. Las visitas son redondeadas, no hay suscriptores y YouTube puede limitarlo. No lo uses de forma masiva.
+## Cómo se calculan los scores
 
-Los tags sugeridos salen de frases repetidas en los títulos del top 10; no son los tags reales de los competidores.
+### Packaging
 
-## Privacidad y permisos
+`Packaging Score = 65 % miniatura + 35 % título`
 
-- Sin telemetría, sin cuentas y sin servidor propio.
-- Permisos: `storage` y `scripting`.
-- Hosts: `www.youtube.com`, `studio.youtube.com`, `*.ytimg.com`, `www.googleapis.com`.
-- La API key se guarda en `storage.sync` de tu perfil y solo se envía a `googleapis.com`.
-- El modo sin clave hace peticiones a `youtube.com` con tus cookies.
-- Nada de código remoto, `eval` ni `<all_urls>`.
+- Contraste tonal, densidad visual, color y legibilidad móvil.
+- Título de 30–60 caracteres, sin gritos, con 4–12 palabras y un dato concreto.
 
-Lee [PRIVACY.md](PRIVACY.md) para el detalle.
+### SEO
 
-## Desarrollo
+`SEO Score = 50 % descripción + 30 % tags + 20 % título`
 
-```bash
-npm run build      # dist/
-npm start          # compila y abre Firefox
-npm test           # tests
-npm run typecheck  # TypeScript
-npm run lint       # web-ext lint
-npm run package    # ZIP sin firmar en web-ext-artifacts/
+- Descripción: longitud, keyword en las primeras líneas, 2–4 apariciones, enlaces o timestamps, 3 hashtags y CTA.
+- Tags: cantidad, keyword, long-tail, duplicados y límite de 500 caracteres.
+- Título: keyword y longitud.
+
+### Outliers y auditoría
+
+El **outlier** es `visitas / mediana` del canal. Un 3.2× significa que el video
+rompió el patrón. La auditoría completa recorre hasta 500 videos con la API de
+YouTube y muestra mediana, media, top outliers y videos por debajo.
+
+### Rendimiento
+
+El resumen de 48 h usa datos públicos (vistas, likes, comentarios), vistas/día
+frente al ritmo del canal y cambios de título, tags o descripción. No prueba
+causalidad. El CSV añade CTR, impresiones, AVD y % medio visto.
+
+## Datos y caché
+
+- **Video abierto**: player response para título, descripción, tags, vistas y fecha.
+- **Studio**: content script del editor; caché local para mantener el panel al cambiar de sección.
+- **Miniatura**: `i.ytimg.com` o imagen del editor, analizada localmente.
+- **Canal**: página pública `/videos` o API para la auditoría completa.
+- **CSV**: procesado en el navegador; no se sube.
+- **Caché**: tags 10 min, miniatura 10 min, canal 15 min, keywords 24 h, auditoría 24 h.
+
+## Privacidad
+
+- **License key**: se envía a `api.lemonsqueezy.com` para activar/validar/desactivar.
+- **YouTube API key**: se envía a `googleapis.com` con las consultas.
+- **CSV de Studio**: local.
+- **Sin IA**: no se envían títulos, descripciones ni tags a modelos externos.
+- **Sin telemetría** ni analítica.
+
+Más detalle: [PRIVACY.md](PRIVACY.md).
+
+## Comandos
+
+| Comando | Qué hace |
+| --- | --- |
+| `npm run build` | Genera `dist/` |
+| `npm start` | Compila y abre Firefox |
+| `npm test` | Tests de scoring, SEO, CSV, licencia, rendimiento y locales |
+| `npm run typecheck` | Comprobación de tipos |
+| `npm run lint` | Valida el paquete con `web-ext lint` |
+| `npm run package` | Genera el ZIP para AMO |
+| `npm run sync:public` | Sincroniza el snapshot público en `github/` |
+
+## Estructura
+
+```
+src/
+  background/   Router, licencia, API, auditoría y rendimiento
+  content/      Paneles de watch/canal y extractor de Studio
+  core/         Scoring, SEO, tags, keywords, CSV, auditoría, rendimiento
+  sidebar/      Panel (Preact)
+  options/      Ajustes y licencia
+  ui/           Tema compartido
+docs/           Landing, privacidad, términos y reembolsos
 ```
 
-Estructura:
+## Hoja de ruta
 
-```
-src/background/   router de mensajes, lectura del player, cuota, API
-src/content/      panel de /watch, panel de canal, Studio
-src/core/         scoring, métricas, tags, keywords, recomendaciones
-src/sidebar/      panel lateral (Preact)
-src/options/      ajustes
-src/ui/           tema
-```
+- **v0.3.1** — Watchlist local de canales, keywords y videos.
+- **v0.4.0** — OAuth de YouTube Analytics: retención, fuentes de tráfico y términos de búsqueda.
 
-Documentación: [arquitectura](docs/architecture.md), [scoring](docs/scoring.md), [keywords](docs/keyword-research.md), [Studio](docs/studio-dom.md), [roadmap](docs/roadmap.md).
+## Licencia
 
-El manifest público usa el add-on ID `packlens@packlens.app`. Si haces un fork, cámbialo antes de firmar.
-
-## Open core
-
-Este repositorio contiene el **núcleo gratuito completo y funcional**. Funciones que impliquen costes recurrentes o integraciones sensibles (por ejemplo YouTube Analytics con OAuth, IA gestionada o monitorización con alertas) pueden distribuirse como módulos separados y no forman parte de este código.
-
-El núcleo no está capado artificialmente: si una función está aquí, funciona sin cuenta ni licencia.
-
-## Contribuir
-
-Lee [CONTRIBUTING.md](CONTRIBUTING.md). Se usa DCO (`git commit -s`). No incluyas claves, datos personales ni código propietario.
-
-## Licencia y marca
-
-- Código: **Mozilla Public License 2.0** ([LICENSE](LICENSE)).
-- El nombre **PackLens** y el logo son marcas; la licencia no concede su uso. Los forks deben usar otro nombre y otro icono. Ver [TRADEMARK.md](TRADEMARK.md).
-
-## English summary
-
-PackLens is an open-source Firefox extension (MPL-2.0) that analyses YouTube packaging and SEO: thumbnail, title, description, tags, competitor tags, channel outliers and keyword research. Everything runs locally. Keyword research can use your own free YouTube Data API key or an experimental session-based mode. It can apply suggested tags and titles to YouTube Studio with confirmation. No telemetry, no server, no remote code.
-
----
-
-Hecho con cariño para creadores que quieren dejar de perder puntos por descuido.
+MPL-2.0. Consulta [LICENSE](LICENSE).

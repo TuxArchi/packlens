@@ -3,6 +3,43 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 Versionado [SemVer](https://semver.org/lang/es/).
 
+## [0.3.0] - 2026-11-01
+
+### Añadido
+
+- **Licencia Pro con Lemon Squeezy**: activación, validación diaria, desactivación, 3 dispositivos, prueba de 7 días y gracia offline de 7 días.
+- **Free vs Pro** con gates en la UI y código público.
+- **Generador avanzado de títulos**: 10 variantes puntuadas con patrones del top 10.
+- **Optimizador de descripción**: análisis local, introducción SEO, keyword, tags al final, 3 hashtags, diff y aplicación en Studio.
+- **Optimizador avanzado** con términos y hashtags de la competencia (Pro).
+- **Pestaña Rendimiento**: resumen de 48 h con datos públicos y comparación con el canal.
+- **Analytics CSV**: CTR, impresiones, vistas, AVD y % medio visto desde el CSV de Studio.
+- **Auditoría completa del canal**: hasta 500 videos, mediana, outliers y bajo rendimiento, gratis.
+- **Exportaciones Pro** de auditoría, keywords, recomendaciones y rendimiento en CSV/JSON.
+- **Landing pública** con precios, privacidad, términos y reembolsos.
+- **Caché del editor de Studio** para mantener los datos al cambiar de sección.
+- **Fallback público** para recuperar metadatos y tags de videos publicados.
+
+### Cambiado
+
+- `Alt+Shift+P` vuelve a abrir y cerrar el **sidebar integrado** mediante `_execute_sidebar_action`.
+- El botón flotante de Studio y el icono de la barra abren la ventana desacoplada.
+- Al abrir el sidebar integrado se cierra la ventana desacoplada.
+- La versión pasa a **0.3.0**.
+
+### Corregido
+
+- El panel dejaba de mostrar packaging, tags, SEO, keywords y rendimiento al cambiar de sección en Studio.
+- Los tags no se cargaban en videos pendientes ocultos detrás de «Mostrar más».
+- Los tags y el rendimiento no se recuperaban en la ventana externa para videos publicados.
+- El atajo de teclado abría la ventana externa en lugar del sidebar.
+
+### Notas
+
+- Sin IA: los análisis y las propuestas son reglas locales.
+- OAuth de YouTube Analytics queda para v0.4.0.
+- El ZIP de release no está firmado; para instalación permanente hay que firmarlo en AMO.
+
 ## [0.2.3] - 2026-11-01
 
 ### Corregido

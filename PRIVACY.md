@@ -1,47 +1,71 @@
 # Política de privacidad
 
-**PackLens v0.2.1** funciona entera en tu navegador. No hay servidor propio, cuentas, telemetría ni analítica.
+**PackLens v0.3.0** funciona en tu navegador. No hay servidor propio de PackLens,
+cuentas, telemetría, analítica ni publicidad. Esta política explica qué datos se
+guardan, qué se envía fuera del navegador y por qué.
 
-## Qué datos se guardan
+Vigente desde el 1 de noviembre de 2026.
 
-En la extensión, usando el almacenamiento de Firefox:
+## 1. Datos que se guardan en tu navegador
 
-- **Ajustes** (`storage.sync`): API key de YouTube Data, preferencia de botón flotante y modo de búsqueda (API/sin clave).
-- **Caché y cuota** (`storage.local`): resultados de keywords, contador de cuota, tags publicados y métricas de miniaturas.
-- **Keyword SEO por video** (`storage.local`): la keyword que asignas a un video.
+- **Ajustes** (`storage.sync`): API key de YouTube Data, preferencia del botón
+  flotante y modo de búsqueda.
+- **Licencia** (`storage.local`): license key, plan, ID de instancia, límite y uso
+  de dispositivos, última validación y estado offline.
+- **Caché y cuota** (`storage.local`): resultados de keywords, insights de
+  descripciones, auditoría de canales, contadores de cuota y métricas de
+  miniaturas.
+- **Resúmenes de rendimiento** (`storage.local`): una foto de título, descripción,
+  tags y métricas públicas por video para comparar cambios.
+- **Editor de Studio** (`storage.local`): el último título, descripción y tags
+  leídos del editor para mantener el panel al cambiar de sección.
+- **Ventana del panel** (`storage.local`): el ID de la ventana desacoplada, si la
+  usas.
 
-No se envían a ningún servidor de PackLens.
+Estos datos no se envían a ningún servidor de PackLens. Puedes borrarlos
+eliminando la extensión o limpiando sus datos desde Firefox.
 
-## Qué datos se leen
+## 2. Datos que se envían fuera del navegador
 
-- Páginas de YouTube y YouTube Studio que abres: título, descripción, tags, miniatura, visitas y datos del canal.
-- Miniaturas de `i.ytimg.com` / `i9.ytimg.com`.
-- Páginas públicas de canales (`/videos`) para calcular outliers.
-- YouTube Data API (`googleapis.com`) solo cuando pulsas buscar una keyword en modo API y has configurado tu clave.
-- Página de resultados de YouTube (`youtube.com/results`) solo en modo sin clave, con tus cookies de sesión.
+- **Lemon Squeezy** (`api.lemonsqueezy.com`): la license key y el ID de instancia
+  se envían para activar, validar y desactivar Pro. Lemon Squeezy gestiona el pago,
+  el IVA y los datos de la compra como merchant of record. PackLens no recibe ni
+  almacena datos de tarjeta.
+- **Google / YouTube Data API** (`googleapis.com`): cuando usas keywords,
+  auditoría de canal o estadísticas, se envían tu API key, la keyword, IDs de
+  videos y IDs de canal. Google los procesa según sus propias políticas.
+- **Páginas públicas de YouTube** (`youtube.com`): para leer tags publicados,
+  metadatos de videos y la página de canal, la extensión hace peticiones con las
+  cookies que tu navegador ya tiene para YouTube. No hay un proxy de PackLens.
+- **CSV de Studio**: se lee y procesa en tu navegador. No se sube a ningún
+  servidor.
 
-## Qué se envía fuera del navegador
+## 3. Lo que no hacemos
 
-- **Modo API**: la keyword que buscas y tu API key se envían a `www.googleapis.com`. La clave se guarda en tu perfil y solo se usa para esa API.
-- **Modo sin clave**: la consulta se hace a `www.youtube.com` con tus cookies, como si buscaras manualmente.
-- **Nada más**. No hay analítica, ni informes de errores, ni publicidad.
+- No usamos IA ni enviamos tus títulos, descripciones o tags a modelos externos.
+- No hay telemetría, analítica de producto, informes de errores ni publicidad.
+- No vendemos ni compartimos datos con terceros.
+- No accedemos a tus cookies directamente; solo las peticiones que hace el
+  navegador incluyen las cookies existentes del sitio.
 
-## Cookies
+## 4. Retención y borrado
 
-PackLens no lee ni modifica cookies directamente. En modo sin clave, la petición a `youtube.com/results` incluye las cookies que el navegador ya tiene para ese sitio, igual que una pestaña normal.
+Los datos permanecen en tu perfil de Firefox hasta que borras los datos de la
+extensión o la desinstalas. La license key se conserva para validar Pro; puedes
+desactivar el dispositivo desde Ajustes. Los reembolsos y la facturación se
+gestionan en Lemon Squeezy.
 
-## Retención y borrado
+## 5. Menores
 
-Todo queda en tu perfil de Firefox. Puedes borrarlo eliminando la extensión o limpiando sus datos desde `about:debugging` / `about:addons`. No hay cuenta que eliminar.
+PackLens no está dirigida a menores de 13 años.
 
-## Menores
+## 6. Cambios
 
-La extensión no está dirigida a menores de 13 años.
+Si una versión futura añade OAuth, un servidor o cualquier tratamiento nuevo,
+esta política se actualizará antes de activarlo.
 
-## Cambios futuros
+## 7. Contacto
 
-Si en el futuro se añaden funciones opcionales con servidor (por ejemplo IA gestionada, Analytics con OAuth o alertas), esta política se actualizará antes de activarlas y se pedirá consentimiento cuando corresponda.
-
-## Contacto
-
-Para cuestiones de privacidad, abre un issue no sensible o usa un Security Advisory para información confidencial.
+Para cuestiones de privacidad, abre un issue no sensible en
+[GitHub Issues](https://github.com/TuxArchi/packlens/issues) o usa un Security
+Advisory para información confidencial.

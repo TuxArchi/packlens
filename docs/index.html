@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PackLens — Packaging y SEO para YouTube, sin adivinar</title>
+    <meta
+      name="description"
+      content="PackLens analiza packaging, SEO, tags, competencia y rendimiento de tus videos de YouTube. Núcleo gratis, Pro opcional y todo el análisis local."
+    />
+    <meta name="theme-color" content="#0f1115" />
+    <link rel="icon" href="./icon-128.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Saltar al contenido</a>
+
+    <header class="nav">
+      <a class="brand" href="./index.html">
+        <img src="./icon-128.png" alt="" width="28" height="28" />
+        <span>PackLens</span>
+      </a>
+      <nav aria-label="Principal">
+        <a href="#features">Funciones</a>
+        <a href="#pricing">Precios</a>
+        <a href="#license">Licencia</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/TuxArchi/packlens" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <p class="eyebrow">v0.3.0 · Open source · Sin IA</p>
+            <h1>El packaging de tu canal, con datos y sin adivinar.</h1>
+            <p class="lead">
+              PackLens analiza título, descripción, tags, competencia y rendimiento
+              directamente en YouTube Studio. Todo el análisis ocurre en tu navegador:
+              sin servidor propio, sin telemetría y sin enviar tus datos a una IA.
+            </p>
+            <div class="cta">
+              <a
+                class="button button-primary"
+                href="https://github.com/TuxArchi/packlens/releases/latest"
+                rel="noopener"
+              >
+                Descargar gratis
+              </a>
+              <a class="button" href="#pricing">Ver Pro</a>
+            </div>
+            <p class="fine">
+              Firefox 142+ · MPL-2.0 · El núcleo gratuito no caduca.
+            </p>
+          </div>
+          <div class="hero-card" aria-label="Resumen de PackLens">
+            <div class="score">
+              <span class="score-number">92</span>
+              <span class="score-label">Packaging Score</span>
+            </div>
+            <ul class="checks">
+              <li class="ok">Keyword en el título</li>
+              <li class="ok">Miniatura legible en móvil</li>
+              <li class="ok">Descripción con capítulos</li>
+              <li class="warn">3 tags sin usar</li>
+              <li class="ok">3 hashtags al final</li>
+            </ul>
+            <p class="hero-note">
+              Diagnóstico local, editable y sin promesas mágicas.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <div class="wrap">
+          <p class="eyebrow">Qué hace</p>
+          <h2>Todo el trabajo aburrido, en un panel.</h2>
+          <p class="section-lead">
+            Menos hojas de cálculo. Menos “creo que este título es mejor”. Más
+            evidencia para decidir qué cambiar antes y después de publicar.
+          </p>
+
+          <div class="grid">
+            <article class="card">
+              <h3>Packaging Score</h3>
+              <p>
+                Miniatura, título y claridad en una puntuación de 0 a 100, con
+                reglas explicadas y aplicables a videos programados.
+              </p>
+            </article>
+            <article class="card">
+              <h3>SEO de descripción</h3>
+              <p>
+                Keyword en las primeras líneas, densidad, tags, enlaces y
+                capítulos. Analiza y propone una versión más limpia.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Tags y competencia</h3>
+              <p>
+                Compara tus tags con los del top 10, detecta huecos y añade los
+                que faltan sin pasarte del límite de Studio.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Keywords</h3>
+              <p>
+                Dificultad, interés, top 10, patrones de título y frases
+                repetidas. Con tu API key o en modo sesión.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Auditoría de canal</h3>
+              <p>
+                Todos los videos del canal, mediana, outliers y rendimiento
+                bajo. Gratis, con tu propia cuota de YouTube.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Resumen de 48 h</h3>
+              <p>
+                Qué funcionó y qué no en los primeros dos días: vistas/día,
+                engagement, cambios de metadatos y comparación con el canal.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Analytics CSV</h3>
+              <p>
+                Importa el CSV de Studio y añade CTR, impresiones, AVD y % medio
+                visto. Se procesa localmente.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Exportaciones</h3>
+              <p>
+                Auditoría, keywords, recomendaciones y resúmenes en CSV o JSON
+                para tu archivo o tu equipo.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="compare" class="section section-alt">
+        <div class="wrap">
+          <p class="eyebrow">Free vs Pro</p>
+          <h2>El núcleo gratis se queda gratis.</h2>
+          <p class="section-lead">
+            Pro añade profundidad y comodidad, no secuestra lo básico. Puedes usar
+            PackLens sin pagar indefinidamente.
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Función</th>
+                  <th scope="col">Free</th>
+                  <th scope="col">Pro</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Packaging, SEO, tags y outliers</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+                <tr><td>Keywords con API o sesión</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+                <tr><td>Aplicar tags y título en Studio</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+                <tr><td>Auditoría completa del canal</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+                <tr><td>Resumen de 48 h con datos públicos</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+                <tr><td>Optimizador de descripción básico</td><td class="yes">Sí</td><td class="yes">Sí</td></tr>
+                <tr><td>Generador avanzado de títulos</td><td class="no">—</td><td class="yes">Sí</td></tr>
+                <tr><td>Optimizador avanzado con competencia</td><td class="no">—</td><td class="yes">Sí</td></tr>
+                <tr><td>Analytics CSV: CTR, AVD e impresiones</td><td class="no">—</td><td class="yes">Sí</td></tr>
+                <tr><td>Exportar auditoría, keywords y resúmenes</td><td class="no">—</td><td class="yes">Sí</td></tr>
+                <tr><td>Dispositivos</td><td>Local</td><td><strong>3</strong></td></tr>
+                <tr><td>Prueba</td><td>—</td><td><strong>7 días</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" class="section">
+        <div class="wrap">
+          <p class="eyebrow">Precios de lanzamiento</p>
+          <h2>Pro, sin letra pequeña.</h2>
+          <p class="section-lead">
+            Precio de fundador en pesos mexicanos. Lemon Squeezy gestiona el pago,
+            el IVA y la licencia.
+          </p>
+
+          <div class="pricing">
+            <article class="price-card">
+              <h3>Pro mensual</h3>
+              <p class="price"><span>99</span> MXN / mes</p>
+              <p class="price-note">7 días de prueba. Cancela cuando quieras.</p>
+              <a
+                class="button button-primary"
+                href="https://packlens.lemonsqueezy.com/checkout/buy/7b187f62-e4aa-476d-879b-ddc06e6fd756?embed=1"
+                rel="noopener"
+              >
+                Empezar Pro mensual
+              </a>
+              <ul>
+                <li>Generador avanzado de títulos</li>
+                <li>Descripción con datos de competencia</li>
+                <li>Analytics CSV completo</li>
+                <li>Exportaciones CSV/JSON</li>
+                <li>3 dispositivos</li>
+              </ul>
+            </article>
+
+            <article class="price-card is-featured">
+              <span class="tag">Mejor valor</span>
+              <h3>Pro anual</h3>
+              <p class="price"><span>998</span> MXN / año</p>
+              <p class="price-note">Equivale a 10 meses. 7 días de prueba.</p>
+              <a
+                class="button button-primary"
+                href="https://packlens.lemonsqueezy.com/checkout/buy/9509ceb0-b47b-4e95-bfc8-6db4fb67b621?embed=1"
+                rel="noopener"
+              >
+                Empezar Pro anual
+              </a>
+              <ul>
+                <li>Todo lo de Pro mensual</li>
+                <li>2 meses gratis frente al mensual</li>
+                <li>Mismo límite de 3 dispositivos</li>
+                <li>Precio de fundador bloqueado</li>
+              </ul>
+            </article>
+          </div>
+
+          <p class="fine">
+            Pago seguro con Lemon Squeezy. El IVA aplicable se calcula en el
+            checkout. El núcleo gratuito no requiere tarjeta.
+          </p>
+        </div>
+      </section>
+
+      <section id="license" class="section section-alt">
+        <div class="wrap two-col">
+          <div>
+            <p class="eyebrow">Licencia</p>
+            <h2>Comprar, pegar la clave y listo.</h2>
+            <p>
+              Al comprar recibes una license key por email. En PackLens:
+              <strong>Ajustes → Licencia → Activar Pro</strong>. La clave se guarda
+              en tu navegador y solo se envía a Lemon Squeezy para validarla.
+            </p>
+            <ul class="list">
+              <li>Hasta <strong>3 dispositivos</strong> por licencia.</li>
+              <li><strong>7 días de prueba</strong> en la suscripción.</li>
+              <li>Validación diaria y <strong>7 días de gracia offline</strong>.</li>
+              <li>Puedes desactivar un dispositivo desde Ajustes.</li>
+            </ul>
+          </div>
+          <div class="mini-card">
+            <p class="mini-label">Ajustes → Licencia</p>
+            <p class="mini-key">B1E8-XXXX-XXXX-0921</p>
+            <p class="mini-status">Pro activo · 1/3 dispositivos</p>
+            <p class="mini-note">
+              El gate es comodidad, no DRM. El código sigue siendo público y
+              auditables sus límites.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="section">
+        <div class="wrap">
+          <p class="eyebrow">Preguntas frecuentes</p>
+          <h2>Lo importante, claro.</h2>
+
+          <div class="faq">
+            <details>
+              <summary>¿Es open source?</summary>
+              <p>
+                Sí. El código está publicado con licencia MPL-2.0. Las funciones
+                Pro también son públicas y se activan con una licencia; el gate es
+                una comodidad, no una protección criptográfica.
+              </p>
+            </details>
+            <details>
+              <summary>¿Usa IA?</summary>
+              <p>
+                No. No hay modelos, prompts ni proveedores de IA. Los análisis y
+                las propuestas son reglas locales y datos públicos de YouTube.
+              </p>
+            </details>
+            <details>
+              <summary>¿Dónde van mis datos?</summary>
+              <p>
+                El análisis se queda en tu navegador. La license key se envía a
+                Lemon Squeezy. Las búsquedas y la auditoría usan tu API key de
+                YouTube hacia Google. El CSV se procesa localmente. No hay
+                telemetría.
+              </p>
+            </details>
+            <details>
+              <summary>¿Necesito una API key?</summary>
+              <p>
+                Para keywords con datos completos y para la auditoría del canal,
+                sí: una API key gratuita de YouTube Data API v3. El packaging, el
+                SEO, los tags y el resumen de 48 h funcionan sin clave, con datos
+                públicos.
+              </p>
+            </details>
+            <details>
+              <summary>¿Funciona con videos programados?</summary>
+              <p>
+                Sí para packaging, SEO y tags del editor. El rendimiento y el CSV
+                necesitan que el video esté publicado y tenga datos.
+              </p>
+            </details>
+            <details>
+              <summary>¿Hay reembolsos?</summary>
+              <p>
+                Sí, 14 días para la primera compra. Consulta la
+                <a href="./refund.html">política de reembolso</a>.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-grid">
+        <div>
+          <p class="brand-footer">PackLens</p>
+          <p class="fine">
+            Packaging y SEO para YouTube. Hecho para editar, no para adivinar.
+          </p>
+        </div>
+        <div class="footer-links">
+          <a href="./privacy.html">Privacidad</a>
+          <a href="./terms.html">Términos</a>
+          <a href="./refund.html">Reembolsos</a>
+          <a href="https://github.com/TuxArchi/packlens" rel="noopener">GitHub</a>
+          <a href="https://github.com/TuxArchi/packlens/issues" rel="noopener">Soporte</a>
+        </div>
+      </div>
+      <div class="wrap fine footer-bottom">
+        <span>© 2026 PackLens · MPL-2.0</span>
+        <span>Sin telemetría. Sin IA. Sin servidor propio.</span>
+      </div>
+    </footer>
+  </body>
+</html>
