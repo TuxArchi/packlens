@@ -82,9 +82,9 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 </p>
 
 
-- **Pro mensual**: 99 MXN/mes.
-- **Pro anual**: 998 MXN/año.
-- Precio de lanzamiento. Lemon Squeezy gestiona pago, IVA y licencia.
+- **Pro mensual**: 4.99 USD/mes.
+- **Pro anual**: 39 USD/año.
+- Precio de lanzamiento. Lemon Squeezy gestiona pago, impuestos y licencia.
 - La license key se pega en **Ajustes → Licencia → Activar Pro**.
 - La clave se guarda en `storage.local` y solo se envía a Lemon Squeezy.
 - Hasta 3 dispositivos en mensual o 5 en anual, con desactivación desde Ajustes.

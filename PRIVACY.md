@@ -29,7 +29,7 @@ eliminando la extensión o limpiando sus datos desde Firefox.
 
 - **Lemon Squeezy** (`api.lemonsqueezy.com`): la license key y el ID de instancia
   se envían para activar, validar y desactivar Pro. Lemon Squeezy gestiona el pago,
-  el IVA y los datos de la compra como merchant of record. PackLens no recibe ni
+  los impuestos y los datos de la compra como merchant of record. PackLens no recibe ni
   almacena datos de tarjeta.
 - **Google / YouTube Data API** (`googleapis.com`): cuando usas keywords,
   auditoría de canal o estadísticas, se envían tu API key, la keyword, IDs de

@@ -10,9 +10,9 @@ export const CHECKOUT_URLS = {
 } as const;
 
 /**
- * Founding prices in MXN. Update these when the founding period ends.
+ * Founding prices in USD. Update these when the founding period ends.
  */
 export const PRICES = {
-  monthly: '99 MXN',
-  annual: '998 MXN',
+  monthly: '4.99 USD',
+  annual: '39 USD',
 } as const;
