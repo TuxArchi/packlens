@@ -1083,8 +1083,9 @@ async function openPanel(
     }
   }
 
-  const query = typeof targetTab === 'number' ? `?tabId=${targetTab}` : '';
-  const url = browser.runtime.getURL(`sidebar/index.html${query}`);
+  const params = new URLSearchParams({ mode: 'window' });
+  if (typeof targetTab === 'number') params.set('tabId', String(targetTab));
+  const url = browser.runtime.getURL(`sidebar/index.html?${params.toString()}`);
 
   try {
     const existing = await getPanelWindowId();
@@ -1107,6 +1108,18 @@ async function openPanel(
   }
 }
 
+async function closeDetachedPanel(): Promise<void> {
+  const existing = await getPanelWindowId();
+  if (existing == null) return;
+
+  await clearPanelWindow();
+  try {
+    await browser.windows.remove(existing);
+  } catch {
+    // Already closed.
+  }
+}
+
 async function togglePanel(): Promise<void> {
   const existing = await getPanelWindowId();
 
@@ -1121,35 +1134,6 @@ async function togglePanel(): Promise<void> {
   }
 
   await openPanel(undefined, true);
-}
-
-async function toggleSidebar(): Promise<void> {
-  const action = browser.sidebarAction as unknown as {
-    isOpen?: () => Promise<boolean>;
-    open: () => Promise<void>;
-    close?: () => Promise<void>;
-  };
-
-  try {
-    if (typeof action.isOpen === 'function' && (await action.isOpen())) {
-      if (typeof action.close === 'function') await action.close();
-    } else {
-      await action.open();
-    }
-  } catch {
-    await openPanel(undefined, true);
-    return;
-  }
-
-  const existing = await getPanelWindowId();
-  if (existing != null) {
-    await clearPanelWindow();
-    try {
-      await browser.windows.remove(existing);
-    } catch {
-      // Already closed.
-    }
-  }
 }
 
 async function licenseResponse(): Promise<LicenseResponse> {
@@ -1288,6 +1272,8 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
       return validateLicenseResponse();
     case 'OPEN_SIDEBAR':
       return openPanel(sender.tab?.id, Boolean(sender.tab));
+    case 'SIDEBAR_OPENED':
+      return closeDetachedPanel().then(() => ({ ok: true }));
     default:
       return undefined;
   }
@@ -1295,10 +1281,6 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
 
 browser.action.onClicked.addListener(() => {
   void togglePanel();
-});
-
-browser.commands.onCommand.addListener((command) => {
-  if (command === 'toggle-panel') void toggleSidebar();
 });
 
 browser.windows.onRemoved.addListener((windowId) => {

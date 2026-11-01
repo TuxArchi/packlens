@@ -99,6 +99,19 @@ export function App() {
   const [license, setLicense] = useState<LicenseSnapshot | null>(null);
 
   useEffect(() => {
+    try {
+      const mode = new URLSearchParams(location.search).get('mode');
+      if (mode !== 'window') {
+        void browser.runtime
+          .sendMessage({ type: 'SIDEBAR_OPENED' })
+          .catch(() => undefined);
+      }
+    } catch {
+      // Ignore malformed extension URLs.
+    }
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     const load = () => {

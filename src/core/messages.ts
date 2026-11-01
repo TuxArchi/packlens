@@ -12,6 +12,7 @@ import type {
 export type ExtensionRequest =
   | { type: 'GET_VIDEO_DATA'; tabId?: number }
   | { type: 'OPEN_SIDEBAR' }
+  | { type: 'SIDEBAR_OPENED' }
   | { type: 'VIDEO_CHANGED'; videoId?: string | null }
   | { type: 'GET_STUDIO_DATA' }
   | { type: 'READ_PLAYER_RESPONSE' }
