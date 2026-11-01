@@ -1,0 +1,9 @@
+#0f1115  background
+#161a21  panel
+#1d232c  raised
+#2a323d  border
+#22d3a6  accent
+#e8edf4  text
+#93a1b3  muted
+#34d399  good
+#fbbf24  warn

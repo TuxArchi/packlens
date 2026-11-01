@@ -1,11 +1,24 @@
 # PackLens
 
+<p align="center">
+  <img src="docs/brand/packlens-banner-1600x900.png" alt="PackLens — Packaging y SEO para YouTube" width="100%">
+</p>
+
+<p align="center">
+  <img alt="Versión" src="https://img.shields.io/badge/version-0.3.0-22d3a6">
+  <img alt="Licencia" src="https://img.shields.io/badge/license-MPL--2.0-22d3a6">
+  <img alt="Firefox" src="https://img.shields.io/badge/Firefox-142%2B-22d3a6">
+  <a href="https://tuxarchi.github.io/packlens/"><img alt="Web" src="https://img.shields.io/badge/web-packlens-22d3a6"></a>
+</p>
+
 Extensión de Firefox para **packaging, SEO y rendimiento** de videos de YouTube.
 Analiza miniatura, título, descripción, tags, competencia y resultados directamente
 en YouTube y YouTube Studio. El núcleo es gratuito y open source; Pro añade
 profundidad y comodidad con una licencia.
 
 Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni IA.
+
+**Web:** https://tuxarchi.github.io/packlens/ · **Soporte:** packlens@proton.me
 
 ## Estado: v0.3.0
 
@@ -37,6 +50,14 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 - Watchlist de canales/keywords (v0.3.1).
 - Cualquier función de IA.
 
+## Capturas
+
+| Packaging | Keywords |
+| --- | --- |
+| ![Packaging](docs/brand/packlens-feature-packaging-1600x900.png) | ![Keywords](docs/brand/packlens-feature-keywords-1600x900.png) |
+| **Descripción** | **Rendimiento** |
+| ![Descripción](docs/brand/packlens-feature-description-1600x900.png) | ![Rendimiento](docs/brand/packlens-feature-performance-1600x900.png) |
+
 ## Free vs Pro
 
 | Función | Free | Pro |
@@ -56,6 +77,11 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 | Prueba | — | 7 días |
 
 ## Precio y licencia
+
+<p align="center">
+  <img src="docs/brand/packlens-pro-banner-1600x900.png" alt="PackLens Pro" width="100%">
+</p>
+
 
 - **Pro mensual**: 99 MXN/mes.
 - **Pro anual**: 998 MXN/año.
