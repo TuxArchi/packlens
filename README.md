@@ -53,11 +53,9 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 
 ## Capturas
 
-| Packaging | Keywords |
+| Panel en YouTube Studio | Keywords y títulos |
 | --- | --- |
-| ![Packaging](docs/brand/packlens-feature-packaging-1600x900.png) | ![Keywords](docs/brand/packlens-feature-keywords-1600x900.png) |
-| **Descripción** | **Rendimiento** |
-| ![Descripción](docs/brand/packlens-feature-description-1600x900.png) | ![Rendimiento](docs/brand/packlens-feature-performance-1600x900.png) |
+| ![Panel en Studio](docs/brand/screenshots/packlens-screenshot-studio-1600x900.png) | ![Keywords](docs/brand/screenshots/packlens-screenshot-keywords-1600x900.png) |
 
 ## Free vs Pro
 

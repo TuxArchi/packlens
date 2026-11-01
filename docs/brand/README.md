@@ -53,3 +53,9 @@ Las imágenes `feature-*` son mockups de producto basados en la interfaz real. P
 ## Banner específico de Pro
 
 - `packlens-pro-banner-1600x900.png` — banner para la ficha de PackLens Pro en Lemon Squeezy. Incluye funciones Pro, 3 dispositivos en mensual o 5 en anual, 7 días y precio de fundador.
+
+
+## Capturas de interfaz
+
+- `screenshots/packlens-screenshot-studio-1600x900.png` — panel en YouTube Studio, estado Free.
+- `screenshots/packlens-screenshot-keywords-1600x900.png` — Keywords y generador avanzado, estado Pro.

@@ -564,6 +564,10 @@ details p {
   gap: 16px;
 }
 
+.gallery-wide {
+  grid-column: 1 / -1;
+}
+
 .gallery figure {
   margin: 0;
   border: 1px solid var(--border);
