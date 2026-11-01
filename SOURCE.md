@@ -1,10 +1,10 @@
 # PackLens — source code
 
-This archive contains the source code for **PackLens 0.3.0**, a Firefox extension
+This archive contains the source code for **PackLens 0.3.1**, a Firefox extension
 for YouTube packaging, SEO and performance.
 
 - Repository: https://github.com/TuxArchi/packlens
-- Version: 0.3.0
+- Version: 0.3.1
 - Add-on ID: `packlens@packlens.app`
 - License: MPL-2.0
 - Build: Node.js 22

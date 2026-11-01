@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 Versionado [SemVer](https://semver.org/lang/es/).
 
+## [0.3.1] - 2026-11-01
+
+### Cambiado
+
+- Precios de Pro en **USD**: **4.99 USD/mes** y **39 USD/año**.
+- La landing, el banner, el README y los términos muestran el ahorro anual de 20.88 USD.
+
+### Corregido
+
+- La pantalla **Ajustes → Licencia** mostraba precios en MXN que no coincidían con el checkout.
+
 ## [0.3.0] - 2026-11-01
 
 ### Añadido

@@ -1,4 +1,4 @@
-# Ficha para AMO — PackLens 0.3.0
+# Ficha para AMO — PackLens 0.3.1
 
 Copia estos campos en la consola de [addons.mozilla.org](https://addons.mozilla.org/developers/).
 No incluyas license keys ni datos personales en campos públicos.
@@ -121,11 +121,11 @@ PERMISOS
 - [ ] La tienda de Lemon Squeezy está en live.
 - [ ] Compra real de prueba y license key live activada.
 - [ ] Email de soporte confirmado.
-- [ ] ZIP `packlens-0.3.0.zip` subido a AMO.
+- [ ] ZIP `packlens-0.3.1.zip` subido a AMO.
 - [ ] Ficha, capturas y categorías completas.
 - [ ] Política de privacidad enlazada.
 - [ ] Notas para el revisor con la key de prueba.
 - [ ] AMO aprueba y entrega el `.xpi` firmado.
-- [ ] Tag `v0.3.0` y release en GitHub.
-- [ ] Enlace de descarga de la landing apuntando a v0.3.0.
+- [ ] Tag `v0.3.1` y release en GitHub.
+- [ ] Enlace de descarga de la landing apuntando a v0.3.1.
 - [ ] Anuncio público.

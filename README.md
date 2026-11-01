@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versión" src="https://img.shields.io/badge/version-0.3.0-22d3a6">
+  <img alt="Versión" src="https://img.shields.io/badge/version-0.3.1-22d3a6">
   <img alt="Licencia" src="https://img.shields.io/badge/license-MPL--2.0-22d3a6">
   <img alt="Firefox" src="https://img.shields.io/badge/Firefox-142%2B-22d3a6">
   <a href="https://tuxarchi.github.io/packlens/"><img alt="Web" src="https://img.shields.io/badge/web-packlens-22d3a6"></a>
@@ -20,7 +20,7 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 
 **Web:** https://tuxarchi.github.io/packlens/ · **Soporte:** packlens@proton.me
 
-## Estado: v0.3.0
+## Estado: v0.3.1
 
 ### Free
 
@@ -45,10 +45,10 @@ Todo el análisis ocurre en tu navegador. No hay servidor propio, telemetría ni
 - Validación diaria y **7 días de gracia offline**.
 - **14 días de reembolso** en la primera compra.
 
-### Fuera de v0.3.0
+### Fuera de v0.3.1
 
 - OAuth de YouTube Analytics (retención, fuentes de tráfico y términos de búsqueda).
-- Watchlist de canales/keywords (v0.3.1).
+- Watchlist de canales/keywords (v0.4.0).
 - Cualquier función de IA.
 
 ## Capturas

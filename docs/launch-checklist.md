@@ -1,4 +1,4 @@
-# Checklist de lanzamiento — PackLens 0.3.0
+# Checklist de lanzamiento — PackLens 0.3.1
 
 ## Antes de publicar
 
@@ -10,7 +10,7 @@
 - [ ] La license key live activa, valida y desactiva Pro en Firefox.
 - [ ] Checkout URLs live confirmadas (mensual y anual).
 - [ ] Landing, privacidad, términos y reembolsos revisados.
-- [ ] ZIP `packlens-0.3.0.zip` con ID `packlens@packlens.app`.
+- [ ] ZIP `packlens-0.3.1.zip` con ID `packlens@packlens.app`.
 - [ ] `web-ext lint` sin errores.
 - [ ] Tests, typecheck y build en verde.
 - [ ] AMO: ficha, capturas, privacidad y notas para revisor.
@@ -18,10 +18,10 @@
 
 ## Release
 
-- [ ] Crear tag `v0.3.0`.
+- [ ] Crear tag `v0.3.1`.
 - [ ] Ejecutar el workflow de release.
-- [ ] Verificar `packlens-0.3.0.zip` y `SHA256SUMS`.
-- [ ] Verificar que la landing apunta a la release v0.3.0.
+- [ ] Verificar `packlens-0.3.1.zip` y `SHA256SUMS`.
+- [ ] Verificar que la landing apunta a la release v0.3.1.
 - [ ] Adjuntar el `.xpi` firmado de AMO a la release (opcional).
 
 ## Día del lanzamiento
