@@ -9,3 +9,6 @@ web-ext-artifacts/
 *.key
 .idea/
 .vscode/
+
+release/*.zip
+release/SHA256SUMS
