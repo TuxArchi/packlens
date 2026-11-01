@@ -109,4 +109,60 @@ export const channelStyles = `${panelStyles}
   line-height: 1.4;
   color: #93a1b3;
 }
+
+.ytpl-audit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ytpl-button {
+  appearance: none;
+  border: 1px solid #2a323d;
+  background: #1d232c;
+  color: #e8edf4;
+  border-radius: 8px;
+  padding: 6px 9px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.ytpl-button:hover {
+  border-color: #22d3a6;
+}
+
+.ytpl-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ytpl-audit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ytpl-audit-section > strong {
+  font-size: 12px;
+  color: #e8edf4;
+}
+
+.ytpl-audit-all {
+  border-top: 1px solid #2a323d;
+  padding-top: 8px;
+}
+
+.ytpl-audit-all summary {
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #22d3a6;
+}
+
+.ytpl-audit-all .ytpl-outlier-list {
+  max-height: 420px;
+  overflow: auto;
+}
 `;

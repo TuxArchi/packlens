@@ -1,3 +1,4 @@
+import type { ChannelAudit } from './audit';
 import type { DescriptionCompetitionInsights } from './description-insights';
 import type { LicenseSnapshot } from './license';
 import type { PerformanceStats } from './performance';
@@ -15,6 +16,7 @@ export type ExtensionRequest =
   | { type: 'GET_STUDIO_DATA' }
   | { type: 'READ_PLAYER_RESPONSE' }
   | { type: 'GET_CHANNEL_OUTLIERS'; tabId?: number }
+  | { type: 'GET_CHANNEL_AUDIT'; channelId: string }
   | { type: 'SEARCH_KEYWORD'; keyword: string; mode?: 'api' | 'session' }
   | { type: 'EXPAND_STUDIO_TAGS' }
   | { type: 'ADD_STUDIO_TAGS'; tags: string[]; videoId?: string | null }
@@ -108,4 +110,11 @@ export interface PerformanceResponse {
   ok: boolean;
   data?: PerformanceStats;
   error?: string;
+}
+
+export interface ChannelAuditResponse {
+  ok: boolean;
+  data?: ChannelAudit;
+  error?: string;
+  code?: 'no-key' | 'quota' | 'api' | 'no-channel';
 }

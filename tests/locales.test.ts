@@ -34,6 +34,8 @@ describe('locales', () => {
       'description.scoreChange',
       'performance.csv.ctr',
       'performance.csv.colCtr',
+      'export.csv',
+      'export.json',
     ]);
 
     for (const [key, value] of Object.entries(es)) {

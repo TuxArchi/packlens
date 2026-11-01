@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { render } from 'preact';
-import { formatCompact } from '../core/format';
+import { auditCsvRows } from '../core/audit';
+import type { ChannelAudit } from '../core/audit';
+import { downloadText, safeFilename, toCsv } from '../core/download';
+import { formatCompact, formatNumber } from '../core/format';
 import { t } from '../core/i18n';
-import type { ChannelOutliersResponse } from '../core/messages';
+import type {
+  ChannelAuditResponse,
+  ChannelOutliersResponse,
+  LicenseResponse,
+} from '../core/messages';
 import { getSettings } from '../core/settings';
 import type { ChannelOutliers } from '../core/types';
 import { channelStyles } from './channel-styles';
@@ -30,7 +37,17 @@ function badgeClass(outlier: number): string {
   return 'ytpl-badge';
 }
 
-function OutlierBody({ data }: { data: ChannelOutliers }) {
+function formatPercent(value: number | null): string {
+  return value == null ? '—' : `${(value * 100).toFixed(2)}%`;
+}
+
+function OutlierBody({
+  data,
+  onAudit,
+}: {
+  data: ChannelOutliers;
+  onAudit: () => void;
+}) {
   return (
     <>
       <div class="ytpl-channel-head">
@@ -65,18 +82,191 @@ function OutlierBody({ data }: { data: ChannelOutliers }) {
         </ol>
       )}
 
+      <div class="ytpl-audit-actions">
+        <button type="button" class="ytpl-button" onClick={onAudit}>
+          {t('audit.run')}
+        </button>
+      </div>
+      <p class="ytpl-note">{t('audit.freeHint')}</p>
       <p class="ytpl-note">{t('outliers.hint')}</p>
     </>
   );
+}
+
+function AuditBody({
+  audit,
+  isPro,
+  onBack,
+  onRefresh,
+  onExportCsv,
+  onExportJson,
+  onOpenOptions,
+}: {
+  audit: ChannelAudit;
+  isPro: boolean;
+  onBack: () => void;
+  onRefresh: () => void;
+  onExportCsv: () => void;
+  onExportJson: () => void;
+  onOpenOptions: () => void;
+}) {
+  return (
+    <>
+      <div class="ytpl-channel-head">
+        <strong>{audit.channelName || '—'}</strong>
+        <span>{t('audit.totalVideos', [formatNumber(audit.totalVideos)])}</span>
+        <span>
+          {t('audit.median')}: {formatCompact(audit.medianViews)}
+        </span>
+        <span>
+          {t('audit.average')}: {formatCompact(audit.averageViews)}
+        </span>
+        <span>
+          {t('audit.totalViews')}: {formatCompact(audit.totalViews)}
+        </span>
+      </div>
+
+      {audit.unitsUsed > 0 && (
+        <p class="ytpl-note">{t('audit.units', [String(audit.unitsUsed)])}</p>
+      )}
+      {audit.truncated && (
+        <p class="ytpl-note">
+          {t('audit.truncated', [String(audit.totalVideos)])}
+        </p>
+      )}
+
+      <div class="ytpl-audit-actions">
+        {isPro ? (
+          <>
+            <button type="button" class="ytpl-button" onClick={onExportCsv}>
+              {t('export.csv')}
+            </button>
+            <button type="button" class="ytpl-button" onClick={onExportJson}>
+              {t('export.json')}
+            </button>
+          </>
+        ) : (
+          <button type="button" class="ytpl-button" onClick={onOpenOptions}>
+            {t('export.unlock')}
+          </button>
+        )}
+        <button type="button" class="ytpl-link" onClick={onRefresh}>
+          {t('audit.refresh')}
+        </button>
+        <button type="button" class="ytpl-link" onClick={onBack}>
+          {t('audit.back')}
+        </button>
+      </div>
+
+      {!isPro && <p class="ytpl-note">{t('export.locked')}</p>}
+
+      <div class="ytpl-audit-section">
+        <strong>{t('audit.top')}</strong>
+        <ol class="ytpl-outlier-list">
+          {audit.topOutliers.map((video, index) => (
+            <li key={video.videoId}>
+              <a
+                class="ytpl-outlier"
+                href={`/watch?v=${video.videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="ytpl-rank">{index + 1}</span>
+                <span class="ytpl-outlier-main">
+                  <span class="ytpl-outlier-title">{video.title}</span>
+                  <span class="ytpl-outlier-meta">
+                    {formatCompact(video.views)} · {formatPercent(video.engagementRate)}
+                  </span>
+                </span>
+                <span class={badgeClass(video.outlier)}>{video.outlier.toFixed(1)}x</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="ytpl-audit-section">
+        <strong>{t('audit.bottom')}</strong>
+        <ol class="ytpl-outlier-list">
+          {audit.bottomVideos.map((video, index) => (
+            <li key={video.videoId}>
+              <a
+                class="ytpl-outlier"
+                href={`/watch?v=${video.videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="ytpl-rank">{index + 1}</span>
+                <span class="ytpl-outlier-main">
+                  <span class="ytpl-outlier-title">{video.title}</span>
+                  <span class="ytpl-outlier-meta">
+                    {formatCompact(video.views)} · {formatPercent(video.engagementRate)}
+                  </span>
+                </span>
+                <span class={badgeClass(video.outlier)}>{video.outlier.toFixed(1)}x</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <details class="ytpl-audit-all">
+        <summary>{t('audit.all', [String(audit.totalVideos)])}</summary>
+        <ol class="ytpl-outlier-list">
+          {audit.videos.map((video, index) => (
+            <li key={video.videoId}>
+              <a
+                class="ytpl-outlier"
+                href={`/watch?v=${video.videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="ytpl-rank">{index + 1}</span>
+                <span class="ytpl-outlier-main">
+                  <span class="ytpl-outlier-title">{video.title}</span>
+                  <span class="ytpl-outlier-meta">
+                    {formatCompact(video.views)} · {formatPercent(video.engagementRate)}
+                  </span>
+                </span>
+                <span class={badgeClass(video.outlier)}>{video.outlier.toFixed(1)}x</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </details>
+    </>
+  );
+}
+
+function auditErrorText(code: string | null): string {
+  if (code === 'no-key') return t('audit.errorNoKey');
+  if (code === 'quota') return t('audit.errorQuota');
+  return t('audit.error');
 }
 
 export function ChannelPanel() {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<ChannelOutliers | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [audit, setAudit] = useState<ChannelAudit | null>(null);
+  const [auditStatus, setAuditStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [auditError, setAuditError] = useState<string | null>(null);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    void browser.runtime
+      .sendMessage({ type: 'GET_LICENSE' })
+      .then((response: LicenseResponse | undefined) => {
+        if (response?.ok && response.data) setIsPro(response.data.isPro);
+      })
+      .catch(() => undefined);
+  }, []);
 
   const load = useCallback(async () => {
     setStatus('loading');
+    setAudit(null);
+    setAuditStatus('idle');
+    setAuditError(null);
     try {
       const response = (await browser.runtime.sendMessage({
         type: 'GET_CHANNEL_OUTLIERS',
@@ -95,6 +285,37 @@ export function ChannelPanel() {
     }
   }, []);
 
+  const loadAudit = useCallback(async () => {
+    if (!data?.channelId) {
+      setAuditStatus('error');
+      setAuditError('no-channel');
+      return;
+    }
+
+    setAuditStatus('loading');
+    setAuditError(null);
+
+    try {
+      const response = (await browser.runtime.sendMessage({
+        type: 'GET_CHANNEL_AUDIT',
+        channelId: data.channelId,
+      })) as ChannelAuditResponse | undefined;
+
+      if (response?.ok && response.data) {
+        setAudit(response.data);
+        setAuditStatus('idle');
+      } else {
+        setAudit(null);
+        setAuditError(response?.code ?? 'api');
+        setAuditStatus('error');
+      }
+    } catch {
+      setAudit(null);
+      setAuditError('api');
+      setAuditStatus('error');
+    }
+  }, [data?.channelId]);
+
   useEffect(() => {
     invalidate = () => {
       if (open) void load();
@@ -108,6 +329,28 @@ export function ChannelPanel() {
     const next = !open;
     setOpen(next);
     if (next) void load();
+  };
+
+  const openOptions = () => {
+    void browser.runtime.openOptionsPage();
+  };
+
+  const exportAuditCsv = () => {
+    if (!audit) return;
+    downloadText(
+      `packlens-audit-${safeFilename(audit.channelName, 'channel')}.csv`,
+      toCsv(auditCsvRows(audit)),
+      'text/csv;charset=utf-8',
+    );
+  };
+
+  const exportAuditJson = () => {
+    if (!audit) return;
+    downloadText(
+      `packlens-audit-${safeFilename(audit.channelName, 'channel')}.json`,
+      JSON.stringify({ ...audit, exportedAt: new Date().toISOString() }, null, 2),
+      'application/json',
+    );
   };
 
   return (
@@ -140,11 +383,34 @@ export function ChannelPanel() {
           <div class="ytpl-body">
             {status === 'loading' && <p class="ytpl-muted">{t('outliers.loading')}</p>}
             {status === 'error' && <p class="ytpl-muted">{t('outliers.error')}</p>}
-            {status === 'idle' && data && <OutlierBody data={data} />}
+            {status === 'idle' && data && !audit && auditStatus !== 'loading' && (
+              <OutlierBody data={data} onAudit={() => void loadAudit()} />
+            )}
+            {auditStatus === 'loading' && (
+              <p class="ytpl-muted">{t('audit.loading')}</p>
+            )}
+            {auditStatus === 'error' && (
+              <p class="ytpl-muted">{auditErrorText(auditError)}</p>
+            )}
+            {audit && (
+              <AuditBody
+                audit={audit}
+                isPro={isPro}
+                onBack={() => setAudit(null)}
+                onRefresh={() => void loadAudit()}
+                onExportCsv={exportAuditCsv}
+                onExportJson={exportAuditJson}
+                onOpenOptions={openOptions}
+              />
+            )}
           </div>
 
           <footer class="ytpl-foot">
-            <button type="button" class="ytpl-link" onClick={() => void load()}>
+            <button
+              type="button"
+              class="ytpl-link"
+              onClick={() => (audit ? void loadAudit() : void load())}
+            >
               {t('outliers.refresh')}
             </button>
             <button type="button" class="ytpl-link" onClick={() => setOpen(false)}>

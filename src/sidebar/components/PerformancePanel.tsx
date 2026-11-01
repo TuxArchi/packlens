@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { findCsvRow, parseStudioCsv } from '../../core/csv';
 import type { CsvReport, CsvVideoRow } from '../../core/csv';
+import { downloadText, safeFilename, toCsv } from '../../core/download';
 import { formatCompact, formatDuration, formatNumber } from '../../core/format';
 import { t } from '../../core/i18n';
 import type { PerformanceResponse } from '../../core/messages';
@@ -200,6 +201,72 @@ export function PerformancePanel({ video, isPro }: Props) {
     void browser.runtime.openOptionsPage();
   };
 
+  const exportReviewJson = () => {
+    if (!review || !video) return;
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      review,
+      csv: csvRow
+        ? { row: csvRow, medians: csvReport?.medians ?? null, file: csvName }
+        : null,
+    };
+    downloadText(
+      `packlens-performance-${safeFilename(video.title || video.videoId || 'video')}.json`,
+      JSON.stringify(payload, null, 2),
+      'application/json',
+    );
+  };
+
+  const exportReviewCsv = () => {
+    if (!review || !video) return;
+    const rows: Array<Array<string | number | null>> = [
+      ['metric', 'value'],
+      ['videoId', video.videoId],
+      ['title', video.title],
+      ['verdict', review.verdict],
+      ['ageHours', Number(review.ageHours.toFixed(2))],
+      ['views', review.stats.views],
+      ['viewsPerDay', review.viewsPerDay == null ? null : Number(review.viewsPerDay.toFixed(2))],
+      ['channelMedianViews', review.stats.channelMedianViews],
+      [
+        'channelMedianViewsPerDay',
+        review.stats.channelMedianViewsPerDay == null
+          ? null
+          : Number(review.stats.channelMedianViewsPerDay.toFixed(2)),
+      ],
+      [
+        'engagementRate',
+        review.engagementRate == null
+          ? null
+          : Number((review.engagementRate * 100).toFixed(3)),
+      ],
+      ['likes', review.stats.likes],
+      ['comments', review.stats.comments],
+      ['ratio', review.ratio == null ? null : Number(review.ratio.toFixed(3))],
+    ];
+
+    if (csvRow) {
+      rows.push(
+        ['csvViews', csvRow.views],
+        ['csvImpressions', csvRow.impressions],
+        ['csvCtr', csvRow.ctr],
+        ['csvAvdSeconds', csvRow.avdSeconds == null ? null : Number(csvRow.avdSeconds.toFixed(2))],
+        [
+          'csvAveragePercentViewed',
+          csvRow.averagePercentViewed == null
+            ? null
+            : Number(csvRow.averagePercentViewed.toFixed(3)),
+        ],
+      );
+    }
+
+    downloadText(
+      `packlens-performance-${safeFilename(video.title || video.videoId || 'video')}.csv`,
+      toCsv(rows),
+      'text/csv;charset=utf-8',
+    );
+  };
+
   return (
     <div class="performance">
       <section class="card performance-review">
@@ -354,6 +421,32 @@ export function PerformancePanel({ video, isPro }: Props) {
               {t('performance.csv.unlock')}
             </button>
           </>
+        )}
+      </section>
+
+      <section class="card performance-export">
+        <div class="performance-head">
+          <div>
+            <h3 class="section-title">{t('export.heading')}</h3>
+            <p class="muted">{t('export.reviewHint')}</p>
+          </div>
+          <span class={`plan-badge ${isPro ? 'is-pro' : 'is-free'}`}>
+            {isPro ? t('license.planPro') : t('license.planFree')}
+          </span>
+        </div>
+        {isPro ? (
+          <div class="desc-actions">
+            <button type="button" class="button" onClick={exportReviewCsv}>
+              {t('export.csv')}
+            </button>
+            <button type="button" class="button" onClick={exportReviewJson}>
+              {t('export.json')}
+            </button>
+          </div>
+        ) : (
+          <button type="button" class="button" onClick={openOptions}>
+            {t('export.unlock')}
+          </button>
         )}
       </section>
     </div>

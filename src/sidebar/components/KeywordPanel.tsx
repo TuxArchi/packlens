@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { copyText } from '../../core/clipboard';
+import { downloadText, safeFilename, toCsv } from '../../core/download';
 import { formatAge, formatCompact, formatNumber } from '../../core/format';
 import { t } from '../../core/i18n';
 import type {
@@ -182,6 +183,78 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
   const generateAdvancedTitles = () => {
     if (!result) return;
     setAdvancedTitles(generateTitleVariants(result.keyword, result.top));
+  };
+
+  const exportKeywordJson = () => {
+    if (!result) return;
+    downloadText(
+      `packlens-keyword-${safeFilename(result.keyword)}.json`,
+      JSON.stringify({ ...result, exportedAt: new Date().toISOString() }, null, 2),
+      'application/json',
+    );
+  };
+
+  const exportKeywordCsv = () => {
+    if (!result) return;
+    const tags = result.recommendations.suggestedTags.join(' | ');
+    const phrases = result.recommendations.phrases
+      .map((phrase) => `${phrase.text} (${phrase.count})`)
+      .join(' | ');
+    const header = [
+      'keyword',
+      'difficulty',
+      'label',
+      'interest',
+      'medianViews',
+      'medianSubs',
+      'recentRatio',
+      'titleMatchRatio',
+      'videoId',
+      'videoTitle',
+      'channelTitle',
+      'views',
+      'subs',
+      'publishedAt',
+      'durationSeconds',
+      'suggestedTags',
+      'phrases',
+    ];
+    const rows: Array<Array<string | number | null>> = [header];
+    const base = [
+      result.keyword,
+      result.difficulty,
+      result.label,
+      result.interest,
+      result.medianViews,
+      result.medianSubs,
+      result.recentRatio,
+      result.titleMatchRatio,
+    ];
+
+    if (result.top.length === 0) {
+      rows.push([...base, '', '', '', '', '', '', '', tags, phrases]);
+    } else {
+      for (const video of result.top) {
+        rows.push([
+          ...base,
+          video.videoId,
+          video.title,
+          video.channelTitle,
+          video.views,
+          video.subs,
+          video.publishedAt,
+          video.durationSeconds,
+          tags,
+          phrases,
+        ]);
+      }
+    }
+
+    downloadText(
+      `packlens-keyword-${safeFilename(result.keyword)}.csv`,
+      toCsv(rows),
+      'text/csv;charset=utf-8',
+    );
   };
 
   const confirmAddTags = async () => {
@@ -604,6 +677,31 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
               )}
             </div>
           </section>
+
+          <section class="card kw-export">
+            <div class="kw-export-head">
+              <h3 class="section-title">{t('export.heading')}</h3>
+              <span class={`plan-badge ${isPro ? 'is-pro' : 'is-free'}`}>
+                {isPro ? t('license.planPro') : t('license.planFree')}
+              </span>
+            </div>
+            <p class="muted">{t('export.keywordsHint')}</p>
+            {isPro ? (
+              <div class="desc-actions">
+                <button type="button" class="button" onClick={exportKeywordCsv}>
+                  {t('export.csv')}
+                </button>
+                <button type="button" class="button" onClick={exportKeywordJson}>
+                  {t('export.json')}
+                </button>
+              </div>
+            ) : (
+              <button type="button" class="button" onClick={openOptions}>
+                {t('export.unlock')}
+              </button>
+            )}
+          </section>
+
           <section class="card">
             <div class="kw-result-head">
               <h3 class="section-title">{t('keywords.resultsFor', [result.keyword])}</h3>

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  fetchChannelUploads,
   fetchVideoDescriptions,
   fetchVideoItems,
   parseIsoDuration,
@@ -65,6 +66,80 @@ describe('fetchVideoDescriptions', () => {
 
     expect(await fetchVideoDescriptions([], 'KEY')).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('fetchChannelUploads', () => {
+  it('reads the uploads playlist and paginates', async () => {
+    const calls: string[] = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.includes('/channels')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [
+              {
+                snippet: { title: 'Canal' },
+                contentDetails: { relatedPlaylists: { uploads: 'UU123' } },
+              },
+            ],
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          items: [
+            { contentDetails: { videoId: 'a' } },
+            { contentDetails: { videoId: 'b' } },
+          ],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const uploads = await fetchChannelUploads('UC123', 'KEY');
+
+    expect(uploads.channelName).toBe('Canal');
+    expect(uploads.videoIds).toEqual(['a', 'b']);
+    expect(uploads.truncated).toBe(false);
+    expect(uploads.units).toBe(2);
+    expect(calls[0]).toContain('/channels');
+    expect(calls[1]).toContain('/playlistItems');
+    expect(calls[1]).toContain('playlistId=UU123');
+  });
+
+  it('marks the audit as truncated at the page limit', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/channels')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [
+              {
+                snippet: { title: 'Canal' },
+                contentDetails: { relatedPlaylists: { uploads: 'UU123' } },
+              },
+            ],
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          items: [{ contentDetails: { videoId: 'a' } }],
+          nextPageToken: 'NEXT',
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const uploads = await fetchChannelUploads('UC123', 'KEY', 1);
+    expect(uploads.truncated).toBe(true);
+    expect(uploads.units).toBe(2);
   });
 });
 

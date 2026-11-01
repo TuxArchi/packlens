@@ -36,6 +36,14 @@ export interface ApiVideoDescription {
   tags: string[];
 }
 
+export interface ChannelUploads {
+  channelId: string;
+  channelName: string;
+  videoIds: string[];
+  truncated: boolean;
+  units: number;
+}
+
 async function getJson<T>(
   path: string,
   params: Record<string, string>,
@@ -206,6 +214,77 @@ export async function fetchVideoDescriptions(
   return ids
     .map((id) => byId.get(id))
     .filter((video): video is ApiVideoDescription => Boolean(video));
+}
+
+export async function fetchChannelUploads(
+  channelId: string,
+  key: string,
+  maxPages = 10,
+): Promise<ChannelUploads> {
+  const channelData = await getJson<{
+    items?: Array<{
+      snippet?: { title?: string };
+      contentDetails?: { relatedPlaylists?: { uploads?: string } };
+    }>;
+  }>(
+    'channels',
+    { part: 'snippet,contentDetails', id: channelId },
+    key,
+  );
+
+  const item = channelData.items?.[0];
+  const channelName = item?.snippet?.title ?? '';
+  const uploads = item?.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploads) {
+    return {
+      channelId,
+      channelName,
+      videoIds: [],
+      truncated: false,
+      units: 1,
+    };
+  }
+
+  const videoIds: string[] = [];
+  let pageToken = '';
+  let pages = 0;
+  let truncated = false;
+
+  do {
+    const data = await getJson<{
+      items?: Array<{ contentDetails?: { videoId?: string } }>;
+      nextPageToken?: string;
+    }>(
+      'playlistItems',
+      {
+        part: 'contentDetails',
+        playlistId: uploads,
+        maxResults: '50',
+        pageToken,
+      },
+      key,
+    );
+
+    pages += 1;
+    for (const playlistItem of data.items ?? []) {
+      const videoId = playlistItem.contentDetails?.videoId;
+      if (videoId) videoIds.push(videoId);
+    }
+
+    pageToken = data.nextPageToken ?? '';
+    if (pageToken && pages >= maxPages) {
+      truncated = true;
+      break;
+    }
+  } while (pageToken);
+
+  return {
+    channelId,
+    channelName,
+    videoIds: [...new Set(videoIds)],
+    truncated,
+    units: 1 + pages,
+  };
 }
 
 export async function fetchChannelStats(ids: string[], key: string): Promise<Map<string, number>> {

@@ -2,6 +2,8 @@ import { parseChannelPage } from '../core/channel-page';
 import type { ChannelPage } from '../core/channel-page';
 import { computeThumbMetrics } from '../core/image-metrics';
 import type { ThumbMetrics } from '../core/image-metrics';
+import { computeChannelAudit } from '../core/audit';
+import type { ChannelAudit } from '../core/audit';
 import { analyzeDescriptionInsights } from '../core/description-insights';
 import type { DescriptionCompetitionInsights } from '../core/description-insights';
 import { computeKeywordResult } from '../core/keywords';
@@ -14,6 +16,7 @@ import {
   validateIfDue as validateLicenseIfDue,
 } from '../core/license';
 import type {
+  ChannelAuditResponse,
   ChannelOutliersResponse,
   DescriptionInsightsResponse,
   KeywordSearchResponse,
@@ -41,6 +44,7 @@ import type {
 import { extractPublishedVideo } from '../core/watch-page';
 import {
   fetchChannelStats,
+  fetchChannelUploads,
   fetchVideoDescriptions,
   fetchVideoItems,
   searchVideoIds,
@@ -61,6 +65,8 @@ const DESCRIPTION_INSIGHTS_KEY = 'description-insights-cache';
 const DESCRIPTION_INSIGHTS_TTL = 24 * 60 * 60 * 1000;
 const DESCRIPTION_INSIGHTS_MAX = 40;
 const PERFORMANCE_TTL = 15 * 60 * 1000;
+const CHANNEL_AUDIT_TTL = 24 * 60 * 60 * 1000;
+const CHANNEL_AUDIT_MAX = 10;
 const SESSION_TTL = 12 * 60 * 60 * 1000;
 const SESSION_TIMEOUT = 10_000;
 const SESSION_MIN_INTERVAL = 2000;
@@ -72,6 +78,7 @@ const publishedTagsCache = new Map<string, { tags: string[]; fetchedAt: number }
 const channelOutliersCache = new Map<string, { data: ChannelOutliers; fetchedAt: number }>();
 const thumbnailMetricsCache = new Map<string, { metrics: ThumbMetrics; at: number }>();
 const performanceCache = new Map<string, CachedPerformance>();
+const channelAuditCache = new Map<string, CachedChannelAudit>();
 const PANEL_WINDOW_KEY = 'panel-window-id';
 let panelWindowId: number | null = null;
 
@@ -87,6 +94,11 @@ interface CachedDescriptionInsights {
 
 interface CachedPerformance {
   data: PerformanceStats;
+  at: number;
+}
+
+interface CachedChannelAudit {
+  data: ChannelAudit;
   at: number;
 }
 
@@ -577,6 +589,59 @@ function median(values: number[]): number | null {
     : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
+async function getChannelAudit(rawChannelId: string): Promise<ChannelAuditResponse> {
+  const channelId = rawChannelId.trim();
+  if (!channelId) return { ok: false, error: 'no-channel', code: 'no-channel' };
+
+  const cached = channelAuditCache.get(channelId);
+  if (cached && Date.now() - cached.at < CHANNEL_AUDIT_TTL) {
+    return { ok: true, data: { ...cached.data, cached: true } };
+  }
+
+  const settings = await getSettings();
+  const apiKey = settings.apiKey.trim();
+  if (!apiKey) return { ok: false, error: 'no-key', code: 'no-key' };
+
+  const quota = await getQuota();
+  if (quota.unitsLeft < 3) return { ok: false, error: 'quota', code: 'quota' };
+
+  try {
+    const uploads = await fetchChannelUploads(channelId, apiKey, 10);
+    await addUnits(uploads.units);
+
+    const videos = [];
+    for (let index = 0; index < uploads.videoIds.length; index += 50) {
+      const batch = uploads.videoIds.slice(index, index + 50);
+      const items = await fetchVideoItems(batch, apiKey);
+      await addUnits(1);
+      videos.push(...items);
+    }
+
+    const data = computeChannelAudit({
+      channelId,
+      channelName: uploads.channelName,
+      videos,
+      truncated: uploads.truncated,
+      unitsUsed:
+        uploads.units + Math.ceil(uploads.videoIds.length / 50),
+    });
+
+    channelAuditCache.set(channelId, { data, at: Date.now() });
+    if (channelAuditCache.size > CHANNEL_AUDIT_MAX) {
+      const oldest = channelAuditCache.keys().next().value;
+      if (oldest) channelAuditCache.delete(oldest);
+    }
+
+    return { ok: true, data };
+  } catch (error) {
+    const code =
+      error instanceof YouTubeApiError && error.reason === 'quotaExceeded'
+        ? 'quota'
+        : 'api';
+    return { ok: false, error: String(error), code };
+  }
+}
+
 async function searchApiKeyword(rawKeyword: string): Promise<KeywordSearchResponse> {
   const keyword = typeof rawKeyword === 'string' ? rawKeyword.trim().slice(0, 120) : '';
   if (!keyword) return { ok: false, error: 'empty', code: 'bad-request' };
@@ -1019,6 +1084,10 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
     case 'GET_CHANNEL_OUTLIERS':
       return getChannelOutliers(
         typeof request.tabId === 'number' ? request.tabId : sender.tab?.id,
+      );
+    case 'GET_CHANNEL_AUDIT':
+      return getChannelAudit(
+        typeof request.channelId === 'string' ? request.channelId : '',
       );
     case 'SEARCH_KEYWORD': {
       const keyword = typeof request.keyword === 'string' ? request.keyword : '';
