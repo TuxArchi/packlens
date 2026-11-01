@@ -156,6 +156,8 @@
   "keywords.patternStart": { "message": "$1 de $2 ponen la keyword al principio" },
   "keywords.patternYear": { "message": "$1 de $2 incluyen un año" },
   "keywords.averageLength": { "message": "Longitud media del título: $1 caracteres" },
+  "keywords.tagsHeading": { "message": "Etiquetas" },
+  "keywords.tagsIntro": { "message": "Usa los tags del top 10. Cópialos o aplícalos en Studio." },
   "keywords.suggestedTags": { "message": "Tags sugeridos" },
   "keywords.copyTags": { "message": "Copiar tags" },
   "keywords.approx": { "message": "Dificultad aproximada: sin datos de suscriptores." },

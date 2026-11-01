@@ -110,8 +110,12 @@ describe('buildDescriptionProposal', () => {
     expect(proposal.text).toContain('00:00 Intro');
     expect(proposal.text).toContain('En este vídeo:');
     expect(proposal.text).toContain('suscríbete');
+    const nonEmptyLines = proposal.text.split('\n').filter(Boolean);
     expect(proposal.after.hashtags).toHaveLength(3);
     expect(lines[lines.length - 1].trim().split(/\s+/)).toHaveLength(3);
+    expect(nonEmptyLines[nonEmptyLines.length - 2]).toContain('Tags:');
+    expect(nonEmptyLines[nonEmptyLines.length - 1]).toMatch(/^#/);
+    expect(proposal.after.keywordOccurrences).toBeGreaterThanOrEqual(2);
     expect(proposal.after.hasCta).toBe(true);
     expect(proposal.changes).toContain('hashtags');
     expect(proposal.changes).toContain('cta');

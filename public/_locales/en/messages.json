@@ -156,6 +156,8 @@
   "keywords.patternStart": { "message": "$1 of $2 put the keyword at the start" },
   "keywords.patternYear": { "message": "$1 of $2 include a year" },
   "keywords.averageLength": { "message": "Average title length: $1 characters" },
+  "keywords.tagsHeading": { "message": "Tags" },
+  "keywords.tagsIntro": { "message": "Use the tags from the top 10. Copy them or apply them in Studio." },
   "keywords.suggestedTags": { "message": "Suggested tags" },
   "keywords.copyTags": { "message": "Copy tags" },
   "keywords.approx": { "message": "Approximate difficulty: subscriber data is not available." },

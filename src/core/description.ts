@@ -176,9 +176,10 @@ export function buildDescriptionProposal(
     [input.title, input.description, input.tags.join(' '), keyword].join(' '),
   );
   const keywordFold = fold(keyword);
-  const tags = normalizeTags(input.tags)
-    .filter((tag) => tag.trim().length > 1 && fold(tag) !== keywordFold)
-    .slice(0, 12);
+  const allTags = normalizeTags(input.tags);
+  const tags = allTags.filter(
+    (tag) => tag.trim().length > 1 && fold(tag) !== keywordFold,
+  );
   const hashtags = deriveHashtags(
     keyword,
     tags,
@@ -195,20 +196,25 @@ export function buildDescriptionProposal(
     options.competition?.commonTerms ?? [],
     language,
   );
+  const tagsLine = buildTagsLine(allTags, 400);
 
   const bodyLines = [firstLine, '', summary];
   if (related) bodyLines.push('', related);
-  bodyLines.push('', bullets.heading, ...bullets.items);
+  if (bullets.items.length > 0) {
+    bodyLines.push('', bullets.heading, ...bullets.items);
+  }
   bodyLines.push('', buildCta(language));
   if (preserved) bodyLines.push('', preserved);
 
   const hashtagLine = hashtags.join(' ');
-  const reserve = hashtagLine ? Array.from(hashtagLine).length + 2 : 0;
+  const reserve =
+    (tagsLine ? Array.from(tagsLine).length + 2 : 0) +
+    (hashtagLine ? Array.from(hashtagLine).length + 2 : 0);
   const body = trimToLimit(
     bodyLines.join('\n').replace(/\n{3,}/g, '\n\n').trim(),
     5000 - reserve,
   );
-  const text = [body, hashtagLine].filter(Boolean).join('\n\n').trim();
+  const text = [body, tagsLine, hashtagLine].filter(Boolean).join('\n\n').trim();
 
   const before = analyzeDescription(input);
   const after = analyzeDescription({ ...input, keyword, description: text });
@@ -416,14 +422,42 @@ function buildSummary(
   language: ContentLanguage,
 ): string {
   const tagList = tags.slice(0, 3).join(', ');
+  const hasKeyword = keyword.trim().length > 0;
+
   if (language === 'en') {
-    return tagList
+    if (!hasKeyword) {
+      return tagList
+        ? `In this video we cover: ${tagList}. You'll see key ideas step by step.`
+        : `In this video we cover the main topics step by step.`;
+    }
+    const first = tagList
       ? `In this video we cover ${keyword}: ${tagList}.`
       : `In this video we cover ${keyword}.`;
+    return `${first} You'll see key ideas to apply ${keyword} step by step.`;
   }
-  return tagList
+
+  if (!hasKeyword) {
+    return tagList
+      ? `En este vídeo hablamos de: ${tagList}. Verás ideas clave paso a paso.`
+      : `En este vídeo hablamos de los temas principales paso a paso.`;
+  }
+  const first = tagList
     ? `En este vídeo hablamos de ${keyword}: ${tagList}.`
     : `En este vídeo hablamos de ${keyword}.`;
+  return `${first} Verás ideas clave para aplicar ${keyword} paso a paso.`;
+}
+
+function buildTagsLine(tags: string[], maxChars: number): string {
+  if (tags.length === 0) return '';
+
+  const selected: string[] = [];
+  for (const tag of tags) {
+    const candidate = [...selected, tag].join(', ');
+    if (candidate.length > maxChars) break;
+    selected.push(tag);
+  }
+
+  return selected.length > 0 ? `Tags: ${selected.join(', ')}` : '';
 }
 
 function buildBullets(
@@ -431,7 +465,8 @@ function buildBullets(
   tags: string[],
   language: ContentLanguage,
 ): { heading: string; items: string[] } {
-  const items = (tags.length > 0 ? tags.slice(0, 3) : [keyword]).map(
+  const fallback = keyword.trim() ? [keyword] : [];
+  const items = (tags.length > 0 ? tags.slice(0, 3) : fallback).map(
     (item) => `- ${item}`,
   );
   return {

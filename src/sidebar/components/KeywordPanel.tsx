@@ -247,14 +247,6 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
 
   return (
     <>
-      <DescriptionOptimizer
-        video={video}
-        keyword={result?.keyword ?? keyword}
-        topVideos={result?.top ?? []}
-        isPro={isPro}
-        onApplied={onApplied}
-      />
-
       <section class="card">
         <h3 class="section-title">{t('keywords.heading')}</h3>
         <p class="muted">{t('keywords.intro')}</p>
@@ -315,7 +307,6 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
           ))}
         </div>
       </section>
-
       {mode === 'api' && (hasKey === false || error === 'no-key') && (
         <section class="card kw-setup">
           <h3 class="section-title">{t('keywords.noKeyTitle')}</h3>
@@ -331,87 +322,200 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
       {error === 'session' && <p class="notice">{t('keywords.errorSession')}</p>}
       {error === 'api' && <p class="notice">{t('keywords.error')}</p>}
 
-      {result && (
-        <>
-          <section class="card">
-            <div class="kw-result-head">
-              <h3 class="section-title">{t('keywords.resultsFor', [result.keyword])}</h3>
-              <div class="kw-badges">
-                {result.cached && <span class="kw-cached">{t('keywords.cached')}</span>}
-                {result.mode === 'session' && (
-                  <span class="kw-cached">{t('keywords.sessionBadge')}</span>
-                )}
-              </div>
-            </div>
+      {result && titleSuggestions.length > 0 && (
+        <section class="card kw-titles">
+          <h3 class="section-title">{t('keywords.titleIdeas')}</h3>
+          <p class="muted">{t('keywords.titleDisclaimer')}</p>
 
-            <div class="kw-metrics">
-              <div class={`kw-metric kw-${result.label}`}>
-                <span class="kw-metric-label">{t('keywords.difficulty')}</span>
-                <strong>{result.difficulty}</strong>
-                <span class="kw-metric-tag">{t(`keywords.${result.label}`)}</span>
-              </div>
-              <div class="kw-metric">
-                <span class="kw-metric-label">{t('keywords.interest')}</span>
-                <strong>{result.interest}</strong>
-                <span class="kw-metric-tag">/100</span>
-              </div>
-            </div>
-
-            {!result.subsAvailable && <p class="kw-note">{t('keywords.approx')}</p>}
-
-            <dl class="kw-stats">
-              <div>
-                <dt>{t('keywords.medianViews')}</dt>
-                <dd>{formatCompact(result.medianViews)}</dd>
-              </div>
-              {result.subsAvailable && (
-                <div>
-                  <dt>{t('keywords.medianSubs')}</dt>
-                  <dd>{formatCompact(result.medianSubs)}</dd>
-                </div>
-              )}
-              <div>
-                <dt>{t('keywords.recent')}</dt>
-                <dd>{Math.round(result.recentRatio * 100)}%</dd>
-              </div>
-              <div>
-                <dt>{t('keywords.titleMatch')}</dt>
-                <dd>{Math.round(result.titleMatchRatio * 100)}%</dd>
-              </div>
-            </dl>
-
-            {videoId && (
+          <div class="kw-title-options">
+            {titleSuggestions.map((suggestion) => (
               <button
                 type="button"
-                class="button"
-                onClick={() => onUseKeyword(result.keyword)}
+                key={suggestion.kind}
+                class={`kw-title-option ${
+                  titleDraft === suggestion.title ? 'is-active' : ''
+                }`}
+                onClick={() => {
+                  setTitleDraft(suggestion.title);
+                  setPendingTitle(null);
+                }}
               >
-                {t('keywords.useInSeo')}
+                <span class="kw-sublabel">
+                  {t(`keywords.titleKind.${suggestion.kind}`)}
+                </span>
+                <span>{suggestion.title}</span>
               </button>
+            ))}
+          </div>
+
+          <div class="kw-advanced">
+            <div class="kw-advanced-head">
+              <span class="kw-sublabel">{t('keywords.advancedTitles')}</span>
+              <span class={`plan-badge ${isPro ? 'is-pro' : 'is-free'}`}>
+                {isPro ? t('license.planPro') : t('license.planFree')}
+              </span>
+            </div>
+
+            {isPro ? (
+              <>
+                {titleInsights && titleInsights.sampleSize > 0 && (
+                  <div class="kw-insights">
+                    <span>
+                      {t('keywords.insightStart', [
+                        String(titleInsights.keywordAtStart),
+                        String(titleInsights.sampleSize),
+                      ])}
+                    </span>
+                    <span>
+                      {t('keywords.insightNumber', [
+                        String(titleInsights.withNumber),
+                        String(titleInsights.sampleSize),
+                      ])}
+                    </span>
+                    <span>
+                      {t('keywords.insightLength', [
+                        String(titleInsights.medianLength),
+                      ])}
+                    </span>
+                  </div>
+                )}
+                <p class="muted">{t('keywords.advancedTitlesHint')}</p>
+                <button
+                  type="button"
+                  class="button"
+                  onClick={generateAdvancedTitles}
+                >
+                  {t('keywords.generateTitles')}
+                </button>
+
+                {advancedTitles.length > 0 && (
+                  <div class="kw-title-options">
+                    {advancedTitles.map((variant) => (
+                      <button
+                        type="button"
+                        key={variant.title}
+                        class={`kw-title-option ${
+                          titleDraft === variant.title ? 'is-active' : ''
+                        }`}
+                        onClick={() => {
+                          setTitleDraft(variant.title);
+                          setPendingTitle(null);
+                        }}
+                      >
+                        <span class="kw-sublabel">
+                          {variant.score}/100
+                          {variant.reasons.length > 0
+                            ? ` · ${variant.reasons
+                                .slice(0, 2)
+                                .map((reason) =>
+                                  t(`keywords.titleReason.${reason}`),
+                                )
+                                .join(' · ')}`
+                            : ''}
+                        </span>
+                        <span>{variant.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <p class="muted">{t('keywords.advancedTitlesLocked')}</p>
+                <button type="button" class="button" onClick={openOptions}>
+                  {t('keywords.unlockPro')}
+                </button>
+              </>
             )}
-          </section>
+          </div>
 
-          <section class="card kw-recos">
-            <h3 class="section-title">{t('keywords.recommendations')}</h3>
+          <input
+            class="input"
+            type="text"
+            maxLength={100}
+            value={titleDraft}
+            onInput={(event) => {
+              setTitleDraft((event.currentTarget as HTMLInputElement).value);
+              setPendingTitle(null);
+            }}
+          />
 
-            {phrases.length > 0 && (
-              <div class="kw-phrases">
-                {phrases.map((phrase) => (
-                  <span class="kw-phrase" key={phrase.text}>
-                    {phrase.text} <b>{phrase.count}</b>
-                  </span>
-                ))}
+          <p class={`kw-title-meta ${titleLength > 60 ? 'is-warn' : ''}`}>
+            {t('keywords.titleChars', [String(titleLength)])} ·{' '}
+            {t('keywords.titleLengthWarning')}
+          </p>
+
+          <div class="kw-title-actions">
+            <button
+              type="button"
+              class="button"
+              disabled={!titleDraft.trim()}
+              onClick={() => void copyTitle()}
+            >
+              {titleCopied ? t('ui.copied') : t('keywords.copyTitle')}
+            </button>
+            {isStudio ? (
+              <button
+                type="button"
+                class="button button-primary"
+                disabled={!titleDraft.trim() || titleBusy}
+                onClick={() => setPendingTitle(titleDraft.trim())}
+              >
+                {t('keywords.applyTitle')}
+              </button>
+            ) : (
+              <span class="kw-note">{t('keywords.addOnlyStudio')}</span>
+            )}
+          </div>
+
+          {pendingTitle && (
+            <div class="kw-confirm">
+              <p class="kw-confirm-text">{t('keywords.titleConfirm')}</p>
+              <p class="kw-title-compare">
+                <span>{t('keywords.titleCurrent')}</span>
+                {video?.title || '—'}
+              </p>
+              <p class="kw-title-compare">
+                <span>{t('keywords.titleNew')}</span>
+                {pendingTitle}
+              </p>
+              <div class="kw-confirm-actions">
+                <button
+                  type="button"
+                  class="button button-primary"
+                  disabled={titleBusy}
+                  onClick={() => void confirmTitle()}
+                >
+                  {t('keywords.confirm')}
+                </button>
+                <button
+                  type="button"
+                  class="button"
+                  disabled={titleBusy}
+                  onClick={() => setPendingTitle(null)}
+                >
+                  {t('keywords.cancel')}
+                </button>
               </div>
-            )}
+            </div>
+          )}
 
-            {patterns && (
-              <ul class="kw-patterns">
-                <li>{t('keywords.patternNumber', [String(patterns.withNumber), String(total)])}</li>
-                <li>{t('keywords.patternStart', [String(patterns.keywordAtStart), String(total)])}</li>
-                <li>{t('keywords.patternYear', [String(patterns.withYear), String(total)])}</li>
-                <li>{t('keywords.averageLength', [String(patterns.averageLength)])}</li>
-              </ul>
-            )}
+          {titleMessage && <p class="notice">{titleMessage}</p>}
+        </section>
+      )}
+
+      <DescriptionOptimizer
+        video={video}
+        keyword={result?.keyword ?? keyword}
+        topVideos={result?.top ?? []}
+        isPro={isPro}
+        onApplied={onApplied}
+      />
+      {result && (
+        <>
+          <section class="card kw-recos">
+            <h3 class="section-title">{t('keywords.tagsHeading')}</h3>
+            <p class="muted">{t('keywords.tagsIntro')}</p>
 
             {suggested.length > 0 && (
               <>
@@ -478,190 +582,85 @@ export function KeywordPanel({ video, onUseKeyword, onApplied, isPro }: Props) {
                 {tagsMessage && <p class="notice">{tagsMessage}</p>}
               </>
             )}
-          </section>
 
-          {titleSuggestions.length > 0 && (
-            <section class="card kw-titles">
-              <h3 class="section-title">{t('keywords.titleIdeas')}</h3>
-              <p class="muted">{t('keywords.titleDisclaimer')}</p>
-
-              <div class="kw-title-options">
-                {titleSuggestions.map((suggestion) => (
-                  <button
-                    type="button"
-                    key={suggestion.kind}
-                    class={`kw-title-option ${
-                      titleDraft === suggestion.title ? 'is-active' : ''
-                    }`}
-                    onClick={() => {
-                      setTitleDraft(suggestion.title);
-                      setPendingTitle(null);
-                    }}
-                  >
-                    <span class="kw-sublabel">
-                      {t(`keywords.titleKind.${suggestion.kind}`)}
+            <div class="kw-recos-patterns">
+              <h4 class="kw-sublabel">{t('keywords.recommendations')}</h4>
+              {phrases.length > 0 && (
+                <div class="kw-phrases">
+                  {phrases.map((phrase) => (
+                    <span class="kw-phrase" key={phrase.text}>
+                      {phrase.text} <b>{phrase.count}</b>
                     </span>
-                    <span>{suggestion.title}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div class="kw-advanced">
-                <div class="kw-advanced-head">
-                  <span class="kw-sublabel">{t('keywords.advancedTitles')}</span>
-                  <span class={`plan-badge ${isPro ? 'is-pro' : 'is-free'}`}>
-                    {isPro ? t('license.planPro') : t('license.planFree')}
-                  </span>
-                </div>
-
-                {isPro ? (
-                  <>
-                    {titleInsights && titleInsights.sampleSize > 0 && (
-                      <div class="kw-insights">
-                        <span>
-                          {t('keywords.insightStart', [
-                            String(titleInsights.keywordAtStart),
-                            String(titleInsights.sampleSize),
-                          ])}
-                        </span>
-                        <span>
-                          {t('keywords.insightNumber', [
-                            String(titleInsights.withNumber),
-                            String(titleInsights.sampleSize),
-                          ])}
-                        </span>
-                        <span>
-                          {t('keywords.insightLength', [
-                            String(titleInsights.medianLength),
-                          ])}
-                        </span>
-                      </div>
-                    )}
-                    <p class="muted">{t('keywords.advancedTitlesHint')}</p>
-                    <button
-                      type="button"
-                      class="button"
-                      onClick={generateAdvancedTitles}
-                    >
-                      {t('keywords.generateTitles')}
-                    </button>
-
-                    {advancedTitles.length > 0 && (
-                      <div class="kw-title-options">
-                        {advancedTitles.map((variant) => (
-                          <button
-                            type="button"
-                            key={variant.title}
-                            class={`kw-title-option ${
-                              titleDraft === variant.title ? 'is-active' : ''
-                            }`}
-                            onClick={() => {
-                              setTitleDraft(variant.title);
-                              setPendingTitle(null);
-                            }}
-                          >
-                            <span class="kw-sublabel">
-                              {variant.score}/100
-                              {variant.reasons.length > 0
-                                ? ` · ${variant.reasons
-                                    .slice(0, 2)
-                                    .map((reason) =>
-                                      t(`keywords.titleReason.${reason}`),
-                                    )
-                                    .join(' · ')}`
-                                : ''}
-                            </span>
-                            <span>{variant.title}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p class="muted">{t('keywords.advancedTitlesLocked')}</p>
-                    <button type="button" class="button" onClick={openOptions}>
-                      {t('keywords.unlockPro')}
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <input
-                class="input"
-                type="text"
-                maxLength={100}
-                value={titleDraft}
-                onInput={(event) => {
-                  setTitleDraft((event.currentTarget as HTMLInputElement).value);
-                  setPendingTitle(null);
-                }}
-              />
-
-              <p class={`kw-title-meta ${titleLength > 60 ? 'is-warn' : ''}`}>
-                {t('keywords.titleChars', [String(titleLength)])} ·{' '}
-                {t('keywords.titleLengthWarning')}
-              </p>
-
-              <div class="kw-title-actions">
-                <button
-                  type="button"
-                  class="button"
-                  disabled={!titleDraft.trim()}
-                  onClick={() => void copyTitle()}
-                >
-                  {titleCopied ? t('ui.copied') : t('keywords.copyTitle')}
-                </button>
-                {isStudio ? (
-                  <button
-                    type="button"
-                    class="button button-primary"
-                    disabled={!titleDraft.trim() || titleBusy}
-                    onClick={() => setPendingTitle(titleDraft.trim())}
-                  >
-                    {t('keywords.applyTitle')}
-                  </button>
-                ) : (
-                  <span class="kw-note">{t('keywords.addOnlyStudio')}</span>
-                )}
-              </div>
-
-              {pendingTitle && (
-                <div class="kw-confirm">
-                  <p class="kw-confirm-text">{t('keywords.titleConfirm')}</p>
-                  <p class="kw-title-compare">
-                    <span>{t('keywords.titleCurrent')}</span>
-                    {video?.title || '—'}
-                  </p>
-                  <p class="kw-title-compare">
-                    <span>{t('keywords.titleNew')}</span>
-                    {pendingTitle}
-                  </p>
-                  <div class="kw-confirm-actions">
-                    <button
-                      type="button"
-                      class="button button-primary"
-                      disabled={titleBusy}
-                      onClick={() => void confirmTitle()}
-                    >
-                      {t('keywords.confirm')}
-                    </button>
-                    <button
-                      type="button"
-                      class="button"
-                      disabled={titleBusy}
-                      onClick={() => setPendingTitle(null)}
-                    >
-                      {t('keywords.cancel')}
-                    </button>
-                  </div>
+                  ))}
                 </div>
               )}
+              {patterns && (
+                <ul class="kw-patterns">
+                  <li>{t('keywords.patternNumber', [String(patterns.withNumber), String(total)])}</li>
+                  <li>{t('keywords.patternStart', [String(patterns.keywordAtStart), String(total)])}</li>
+                  <li>{t('keywords.patternYear', [String(patterns.withYear), String(total)])}</li>
+                  <li>{t('keywords.averageLength', [String(patterns.averageLength)])}</li>
+                </ul>
+              )}
+            </div>
+          </section>
+          <section class="card">
+            <div class="kw-result-head">
+              <h3 class="section-title">{t('keywords.resultsFor', [result.keyword])}</h3>
+              <div class="kw-badges">
+                {result.cached && <span class="kw-cached">{t('keywords.cached')}</span>}
+                {result.mode === 'session' && (
+                  <span class="kw-cached">{t('keywords.sessionBadge')}</span>
+                )}
+              </div>
+            </div>
 
-              {titleMessage && <p class="notice">{titleMessage}</p>}
-            </section>
-          )}
+            <div class="kw-metrics">
+              <div class={`kw-metric kw-${result.label}`}>
+                <span class="kw-metric-label">{t('keywords.difficulty')}</span>
+                <strong>{result.difficulty}</strong>
+                <span class="kw-metric-tag">{t(`keywords.${result.label}`)}</span>
+              </div>
+              <div class="kw-metric">
+                <span class="kw-metric-label">{t('keywords.interest')}</span>
+                <strong>{result.interest}</strong>
+                <span class="kw-metric-tag">/100</span>
+              </div>
+            </div>
 
+            {!result.subsAvailable && <p class="kw-note">{t('keywords.approx')}</p>}
+
+            <dl class="kw-stats">
+              <div>
+                <dt>{t('keywords.medianViews')}</dt>
+                <dd>{formatCompact(result.medianViews)}</dd>
+              </div>
+              {result.subsAvailable && (
+                <div>
+                  <dt>{t('keywords.medianSubs')}</dt>
+                  <dd>{formatCompact(result.medianSubs)}</dd>
+                </div>
+              )}
+              <div>
+                <dt>{t('keywords.recent')}</dt>
+                <dd>{Math.round(result.recentRatio * 100)}%</dd>
+              </div>
+              <div>
+                <dt>{t('keywords.titleMatch')}</dt>
+                <dd>{Math.round(result.titleMatchRatio * 100)}%</dd>
+              </div>
+            </dl>
+
+            {videoId && (
+              <button
+                type="button"
+                class="button"
+                onClick={() => onUseKeyword(result.keyword)}
+              >
+                {t('keywords.useInSeo')}
+              </button>
+            )}
+          </section>
           <section class="block">
             <h3 class="section-title">{t('keywords.top')}</h3>
             {result.top.length === 0 ? (
