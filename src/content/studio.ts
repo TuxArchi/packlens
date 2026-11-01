@@ -1,6 +1,6 @@
 import { computeThumbMetrics } from '../core/image-metrics';
 import type { ThumbMetrics } from '../core/image-metrics';
-import type { StudioWriteResponse } from '../core/messages';
+import type { OpenPanelResponse, StudioWriteResponse } from '../core/messages';
 import { t } from '../core/i18n';
 import { cleanTags, fitTags, parseTagsFromText } from '../core/tags';
 import type { VideoData } from '../core/types';
@@ -677,9 +677,15 @@ function mountStudioLauncher(): void {
     try {
       const response = (await browser.runtime.sendMessage({
         type: 'OPEN_SIDEBAR',
-      })) as { ok?: boolean } | undefined;
+      })) as OpenPanelResponse | undefined;
 
-      showHint(response?.ok ? t('studio.openHintOk') : t('studio.openHintFail'));
+      if (!response?.ok) {
+        showHint(t('studio.openHintFail'));
+      } else if (response.mode === 'window') {
+        showHint(t('studio.openHintWindow'));
+      } else {
+        showHint(t('studio.openHintOk'));
+      }
     } catch {
       showHint(t('studio.openHintFail'));
     }

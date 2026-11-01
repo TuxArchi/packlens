@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 Versionado [SemVer](https://semver.org/lang/es/).
 
+## [0.2.2] - 2026-11-01
+
+### Corregido
+
+- El botón flotante de Studio ahora abre PackLens en una **ventana propia** cuando Firefox no permite `sidebarAction.open()` desde un content script. Antes solo mostraba el aviso con el atajo.
+- La ventana reutiliza y enfoca el panel si ya está abierto.
+- La ventana se vincula a la pestaña de Studio mediante `?tabId=`, así que sigue el video aunque el panel no sea la pestaña activa.
+- El atajo `Alt+Shift+P` sigue abriendo el sidebar real.
+
 ## [0.2.1] - 2026-10-31
 
 ### Añadido

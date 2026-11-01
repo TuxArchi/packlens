@@ -64,9 +64,12 @@ El content script carga la misma URL con `crossOrigin = 'anonymous'` (i9 envía 
 ## Botón flotante y atajo
 
 - Botón en Shadow DOM, `z-index` alto, esquina inferior derecha.
-- Intenta `OPEN_SIDEBAR` (`sidebarAction.open()`).
-- Si Firefox no lo permite por el gesto de usuario, muestra un aviso con `Alt+Shift+P`.
-- El atajo usa `_execute_sidebar_action` en el manifest, que sí es una acción de usuario real.
+- El click envía `OPEN_SIDEBAR`. Como viene de un content script, el background **no** intenta `sidebarAction.open()` (el gesto de usuario no se propaga) y abre un **panel en ventana** con `windows.create`.
+- La ventana carga `sidebar/index.html?tabId=<pestaña>`; `useActiveVideo` usa esa pestaña fija en lugar de la pestaña activa.
+- Si la ventana ya existe, se enfoca en lugar de crear otra.
+- Si el mensaje viene de una página de extensión (por ejemplo el sidebar), sí se intenta `sidebarAction.open()`.
+- El atajo usa `_execute_sidebar_action` en el manifest, que es una acción de usuario real y abre el sidebar de Firefox.
+- Si la ventana falla, el botón muestra un aviso con `Alt+Shift+P`.
 
 ## Depurar
 

@@ -6,6 +6,7 @@ import { computeKeywordResult } from '../core/keywords';
 import type {
   ChannelOutliersResponse,
   KeywordSearchResponse,
+  OpenPanelResponse,
   QuotaResponse,
   SimpleResponse,
   StudioWriteResponse,
@@ -51,6 +52,7 @@ let lastSessionSearchAt = 0;
 const publishedTagsCache = new Map<string, { tags: string[]; fetchedAt: number }>();
 const channelOutliersCache = new Map<string, { data: ChannelOutliers; fetchedAt: number }>();
 const thumbnailMetricsCache = new Map<string, { metrics: ThumbMetrics; at: number }>();
+let panelWindowId: number | null = null;
 
 interface CachedKeyword {
   result: KeywordSearchResult;
@@ -615,10 +617,53 @@ async function getVideoData(tabId?: number): Promise<VideoDataResponse> {
   return { ok: true, data: null };
 }
 
-async function openSidebar(): Promise<SimpleResponse> {
+async function openPanel(
+  tabId?: number,
+  fromContentScript = false,
+): Promise<OpenPanelResponse> {
+  // A message from a content script does not preserve Firefox's user gesture,
+  // so sidebarAction.open() throws there. Extension pages can still try it.
+  if (!fromContentScript) {
+    try {
+      await browser.sidebarAction.open();
+      return { ok: true, mode: 'sidebar' };
+    } catch {
+      // Fall back to a detached panel window.
+    }
+  }
+
+  let targetTab = tabId;
+  if (typeof targetTab !== 'number') {
+    try {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      targetTab = tabs[0]?.id;
+    } catch {
+      targetTab = undefined;
+    }
+  }
+
+  const query = typeof targetTab === 'number' ? `?tabId=${targetTab}` : '';
+  const url = browser.runtime.getURL(`sidebar/index.html${query}`);
+
   try {
-    await browser.sidebarAction.open();
-    return { ok: true };
+    if (panelWindowId != null) {
+      try {
+        await browser.windows.update(panelWindowId, { focused: true });
+        return { ok: true, mode: 'window' };
+      } catch {
+        panelWindowId = null;
+      }
+    }
+
+    const created = await browser.windows.create({
+      url,
+      type: 'popup',
+      width: 380,
+      height: 760,
+    });
+
+    panelWindowId = created.id ?? null;
+    return { ok: true, mode: 'window' };
   } catch (error) {
     return { ok: false, error: String(error) };
   }
@@ -676,7 +721,7 @@ browser.runtime.onMessage.addListener(((message: unknown, sender: browser.runtim
     case 'GET_QUOTA':
       return quotaResponse();
     case 'OPEN_SIDEBAR':
-      return openSidebar();
+      return openPanel(sender.tab?.id, Boolean(sender.tab));
     default:
       return undefined;
   }

@@ -10,11 +10,11 @@ Extensión de Firefox para analizar el **packaging** y el **SEO** de videos de Y
 - **Outliers de canal**: qué videos rompieron la mediana del canal.
 - **Keyword research**: dificultad, interés, top 10 y recomendaciones, con modo API o sin clave.
 - **Aplicar a Studio**: añade los tags que falten y aplica títulos recomendados con confirmación.
-- **Studio**: botón flotante y atajo `Alt+Shift+P` para abrir el panel.
+- **Studio**: botón flotante (abre el panel en una ventana propia) y atajo `Alt+Shift+P` para abrir el sidebar.
 
 ## Estado
 
-**v0.2.1** — núcleo gratuito y open source. Las funciones avanzadas que dependan de servidores, OAuth o IA gestionada pueden distribuirse por separado (ver [Open core](#open-core)).
+**v0.2.2** — núcleo gratuito y open source. Las funciones avanzadas que dependan de servidores, OAuth o IA gestionada pueden distribuirse por separado (ver [Open core](#open-core)).
 
 ## Instalación
 
@@ -47,11 +47,11 @@ Descarga el ZIP de la release y cárgalo con `about:debugging` o fírmalo en AMO
 
 ## Abrir el panel
 
-- **Botón flotante** en la esquina inferior derecha de YouTube Studio.
-- **Atajo `Alt+Shift+P`** desde cualquier pestaña. Se puede cambiar en `about:addons` → engranaje → **Administrar atajos de extensiones**.
+- **Botón flotante** en la esquina inferior derecha de YouTube Studio: abre PackLens en una **ventana propia**, porque Firefox no permite abrir un sidebar desde un content script sin gesto de usuario.
+- **Atajo `Alt+Shift+P`** desde cualquier pestaña: abre el **sidebar** real. Se puede cambiar en `about:addons` → engranaje → **Administrar atajos de extensiones**.
 - Icono de PackLens en la barra de herramientas.
 
-Firefox exige un gesto de usuario para abrir un sidebar; si el botón no puede abrirlo, muestra un aviso con el atajo.
+Si el botón no puede abrir la ventana, muestra un aviso con el atajo. La ventana se enfoca si ya está abierta.
 
 ## Keyword research y API key
 

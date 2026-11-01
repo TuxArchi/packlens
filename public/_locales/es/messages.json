@@ -5,6 +5,7 @@
 
   "studio.openPanel": { "message": "Abrir PackLens" },
   "studio.openHintOk": { "message": "Panel abierto. Si no lo ves, pulsa Alt+Shift+P." },
+  "studio.openHintWindow": { "message": "Panel abierto en una ventana." },
   "studio.openHintFail": { "message": "No se pudo abrir el panel. Pulsa Alt+Shift+P." },
 
   "ui.tabPackaging": { "message": "Packaging" },

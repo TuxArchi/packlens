@@ -25,6 +25,17 @@ export function useActiveVideo(): ActiveVideo {
   const [state, setState] = useState<ViewState>({ status: 'loading' });
   const [refreshToken, setRefreshToken] = useState(0);
 
+  const fixedTabId = (() => {
+    try {
+      const value = new URLSearchParams(location.search).get('tabId');
+      if (!value) return null;
+      const id = Number(value);
+      return Number.isInteger(id) ? id : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const reload = useCallback(() => {
     setRefreshToken((value) => value + 1);
   }, []);
@@ -38,8 +49,18 @@ export function useActiveVideo(): ActiveVideo {
       const currentRequest = ++requestId;
 
       try {
-        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-        const tab = tabs[0];
+        let tab: browser.tabs.Tab | undefined;
+
+        if (fixedTabId != null) {
+          try {
+            tab = await browser.tabs.get(fixedTabId);
+          } catch {
+            tab = undefined;
+          }
+        } else {
+          const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+          tab = tabs[0];
+        }
 
         if (!tab?.id) {
           if (!disposed) setState({ status: 'not-youtube' });
@@ -94,11 +115,16 @@ export function useActiveVideo(): ActiveVideo {
 
     void refresh();
 
-    const onActivated = () => schedule();
-    const onUpdated = (_tabId: number, changeInfo: browser.tabs._OnUpdatedChangeInfo) => {
+    const onActivated = () => {
+      if (fixedTabId == null) schedule();
+    };
+    const onUpdated = (tabId: number, changeInfo: browser.tabs._OnUpdatedChangeInfo) => {
+      if (fixedTabId != null && tabId !== fixedTabId) return;
       if (changeInfo.status === 'complete' || changeInfo.url) schedule();
     };
-    const onFocusChanged = () => schedule();
+    const onFocusChanged = () => {
+      if (fixedTabId == null) schedule();
+    };
     const onMessage = (message: unknown) => {
       if (message && typeof message === 'object' && (message as { type?: string }).type === 'VIDEO_CHANGED') {
         schedule();

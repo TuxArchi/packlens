@@ -55,6 +55,12 @@ export interface QuotaResponse {
   data?: QuotaState;
 }
 
+export interface OpenPanelResponse {
+  ok: boolean;
+  mode?: 'sidebar' | 'window';
+  error?: string;
+}
+
 export interface StudioWriteResponse {
   ok: boolean;
   added?: number;
