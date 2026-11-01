@@ -66,6 +66,7 @@ esta política se actualizará antes de activarlo.
 
 ## 7. Contacto
 
-Para cuestiones de privacidad, abre un issue no sensible en
-[GitHub Issues](https://github.com/TuxArchi/packlens/issues) o usa un Security
-Advisory para información confidencial.
+Para cuestiones de privacidad, escribe a
+[packlens@proton.me](mailto:packlens@proton.me) o abre un issue no sensible en
+[GitHub Issues](https://github.com/TuxArchi/packlens/issues). Para información
+confidencial, usa un Security Advisory.

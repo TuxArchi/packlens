@@ -2,7 +2,8 @@
 
 ## Antes de publicar
 
-- [ ] Email de soporte confirmado en Lemon Squeezy y AMO.
+- [x] Email de soporte confirmado: `packlens@proton.me`.
+- [ ] Mismo email configurado en Lemon Squeezy y AMO.
 - [ ] Lemon Squeezy en **live mode**.
 - [ ] Payout y datos fiscales completos.
 - [ ] Compra real de prueba completada.

@@ -69,6 +69,7 @@ El núcleo gratuito no caduca. Pro financia el desarrollo y desbloquea las funci
 - **Términos**: `https://tuxarchi.github.io/packlens/terms.html`
 - **Reembolsos**: `https://tuxarchi.github.io/packlens/refund.html`
 - **Soporte**: `https://github.com/TuxArchi/packlens/issues`
+- **Email de soporte**: `packlens@proton.me`
 - **Código**: `https://github.com/TuxArchi/packlens`
 
 ## Licencia
@@ -79,7 +80,9 @@ MPL-2.0
 
 ## Email de soporte
 
-Pendiente de confirmar. Usa el mismo email que configures en Lemon Squeezy.
+```text
+packlens@proton.me
+```
 
 ## Notas para el revisor
 

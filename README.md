@@ -202,6 +202,13 @@ docs/           Landing, privacidad, términos y reembolsos
 - **v0.3.1** — Watchlist local de canales, keywords y videos.
 - **v0.4.0** — OAuth de YouTube Analytics: retención, fuentes de tráfico y términos de búsqueda.
 
+## Soporte
+
+- Email: [packlens@proton.me](mailto:packlens@proton.me)
+- Issues: [github.com/TuxArchi/packlens/issues](https://github.com/TuxArchi/packlens/issues)
+
+No incluyas license keys, API keys ni datos personales en un issue público.
+
 ## Licencia
 
 MPL-2.0. Consulta [LICENSE](LICENSE).
