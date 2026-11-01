@@ -164,94 +164,6 @@ export function Options() {
         <p class="lead">{t('options.intro')}</p>
       </header>
 
-      <section class="card field">
-        <label for="api-key">{t('options.apiKey')}</label>
-        <div class="api-row">
-          {showKey ? (
-            <input
-              id="api-key"
-              class="input"
-              type="text"
-              autocomplete="off"
-              spellcheck={false}
-              value={apiKey}
-              onInput={(event) => setApiKey((event.currentTarget as HTMLInputElement).value)}
-            />
-          ) : (
-            <input
-              id="api-key"
-              class="input"
-              type="password"
-              autocomplete="off"
-              spellcheck={false}
-              value={apiKey}
-              onInput={(event) => setApiKey((event.currentTarget as HTMLInputElement).value)}
-            />
-          )}
-          <button
-            type="button"
-            class="button"
-            onClick={() => setShowKey((value) => !value)}
-          >
-            {showKey ? t('options.hideKey') : t('options.showKey')}
-          </button>
-          <button
-            type="button"
-            class="button"
-            disabled={apiKey.trim().length === 0}
-            onClick={() => void copyKey()}
-          >
-            {copiedKey ? t('ui.copied') : t('options.copyKey')}
-          </button>
-        </div>
-        <p class="hint">{t('options.apiKeyHint')}</p>
-        <p class="hint">{t('options.freeKey')}</p>
-        {quota && (
-          <p class="hint">
-            {t('keywords.quota', [
-              formatNumber(quota.searchesUsed),
-              formatNumber(quota.searchLimit),
-              formatNumber(quota.unitsUsed),
-              formatNumber(quota.unitLimit),
-            ])}
-          </p>
-        )}
-
-        <div class="api-help">
-          <h3 class="api-help-title">{t('options.howToGet')}</h3>
-          <ol class="api-steps">
-            <li>
-              <a
-                href="https://console.cloud.google.com/projectcreate"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('options.stepProject')}
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://console.cloud.google.com/apis/library/youtube.googleapis.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('options.stepEnable')}
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://console.cloud.google.com/apis/credentials"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('options.stepCreate')}
-              </a>
-            </li>
-            <li>{t('options.stepRestrict')}</li>
-          </ol>
-        </div>
-      </section>
-
       <section class="card field license-card">
         <div class="license-head">
           <div>
@@ -407,6 +319,95 @@ export function Options() {
           </a>
         </div>
       </section>
+
+      <section class="card field">
+        <label for="api-key">{t('options.apiKey')}</label>
+        <div class="api-row">
+          {showKey ? (
+            <input
+              id="api-key"
+              class="input"
+              type="text"
+              autocomplete="off"
+              spellcheck={false}
+              value={apiKey}
+              onInput={(event) => setApiKey((event.currentTarget as HTMLInputElement).value)}
+            />
+          ) : (
+            <input
+              id="api-key"
+              class="input"
+              type="password"
+              autocomplete="off"
+              spellcheck={false}
+              value={apiKey}
+              onInput={(event) => setApiKey((event.currentTarget as HTMLInputElement).value)}
+            />
+          )}
+          <button
+            type="button"
+            class="button"
+            onClick={() => setShowKey((value) => !value)}
+          >
+            {showKey ? t('options.hideKey') : t('options.showKey')}
+          </button>
+          <button
+            type="button"
+            class="button"
+            disabled={apiKey.trim().length === 0}
+            onClick={() => void copyKey()}
+          >
+            {copiedKey ? t('ui.copied') : t('options.copyKey')}
+          </button>
+        </div>
+        <p class="hint">{t('options.apiKeyHint')}</p>
+        <p class="hint">{t('options.freeKey')}</p>
+        {quota && (
+          <p class="hint">
+            {t('keywords.quota', [
+              formatNumber(quota.searchesUsed),
+              formatNumber(quota.searchLimit),
+              formatNumber(quota.unitsUsed),
+              formatNumber(quota.unitLimit),
+            ])}
+          </p>
+        )}
+
+        <div class="api-help">
+          <h3 class="api-help-title">{t('options.howToGet')}</h3>
+          <ol class="api-steps">
+            <li>
+              <a
+                href="https://console.cloud.google.com/projectcreate"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('options.stepProject')}
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://console.cloud.google.com/apis/library/youtube.googleapis.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('options.stepEnable')}
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://console.cloud.google.com/apis/credentials"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('options.stepCreate')}
+              </a>
+            </li>
+            <li>{t('options.stepRestrict')}</li>
+          </ol>
+        </div>
+      </section>
+
 
       <section class="card field">
         <div class="switch">
